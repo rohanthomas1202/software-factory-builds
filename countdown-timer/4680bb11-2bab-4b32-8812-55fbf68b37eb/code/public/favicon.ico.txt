@@ -1,0 +1,31 @@
+PLACEHOLDER — READ THIS FILE
+==============================
+
+This file is a placeholder for public/favicon.ico.
+
+The app uses public/favicon.svg as the primary favicon, which works in all
+modern browsers (Chrome 80+, Firefox 41+, Safari 13+, Edge 80+).
+
+To generate a proper favicon.ico (for legacy IE / older browser support):
+
+METHOD 1 — Online converter (easiest):
+  1. Open https://realfavicongenerator.net or https://favicon.io
+  2. Upload public/favicon.svg
+  3. Download the generated favicon.ico
+  4. Replace this file with favicon.ico (delete the .txt extension file)
+
+METHOD 2 — CLI with ImageMagick:
+  convert -background transparent public/favicon.svg \
+    -define icon:auto-resize=48,32,16 \
+    public/favicon.ico
+
+METHOD 3 — Node.js script:
+  node public/favicon-generate.mjs
+  (requires: npm install --save-dev sharp to-ico)
+
+METHOD 4 — Use the SVG directly (recommended):
+  The layout.tsx already references favicon.svg as the primary icon.
+  No .ico file is needed for production if you only target modern browsers.
+
+IMPORTANT: Delete this .txt file and replace it with the actual favicon.ico
+binary before deploying to production if legacy browser support is required.

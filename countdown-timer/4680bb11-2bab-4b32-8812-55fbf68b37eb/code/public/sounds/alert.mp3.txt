@@ -1,0 +1,64 @@
+PLACEHOLDER — READ THIS FILE
+==============================
+
+This file documents the required public/sounds/alert.mp3 asset.
+
+The app uses a Web Audio API synthesised fallback chime when alert.mp3 is
+absent, so the app is fully functional without this file. However, for the
+best user experience, add a real MP3 chime file.
+
+FILE REQUIREMENTS
+-----------------
+  Path:        public/sounds/alert.mp3
+  Format:      MPEG Audio Layer III (MP3)
+  Duration:    1–3 seconds
+  File size:   < 50 KB  (target ~15–25 KB)
+  Sample rate: 44,100 Hz
+  Channels:    Mono or Stereo
+  Bit rate:    128 kbps maximum
+  Character:   Pleasant chime / bell tone (not jarring)
+
+HOW TO ADD THE FILE
+-------------------
+
+Option A — Free online resources (CC0 / Public Domain):
+  • https://freesound.org/search/?q=chime&filter=duration%3A%5B0+TO+3%5D
+    (filter: duration 0–3s, CC0 license, search "chime" or "bell")
+  • https://pixabay.com/sound-effects/search/chime/
+    (free for commercial use, no attribution required)
+  • https://soundbible.com/tags-chime.html
+    (many public domain chimes available)
+
+Option B — Generate with online tools:
+  1. Visit https://www.bfxr.net/ or https://sfxr.me/
+  2. Select "Powerup" or "Blip" preset
+  3. Adjust pitch to taste
+  4. Export as WAV, then convert to MP3 at 128kbps using:
+       ffmpeg -i sound.wav -b:a 128k -ar 44100 alert.mp3
+
+Option C — Convert from WAV/OGG using ffmpeg:
+  ffmpeg -i input.wav -b:a 128k -ar 44100 -ac 1 public/sounds/alert.mp3
+
+Option D — Node.js script (uses sox or audacity):
+  npm install --save-dev sox-audio
+  (see public/sounds/README.md for full script)
+
+Option E — Use the built-in Web Audio API fallback:
+  The app already synthesises a pleasant 3-tone chime via the Web Audio API
+  when alert.mp3 is absent. No action needed for development.
+  See src/hooks/useAudioAlert.ts for the synthesis implementation.
+
+VERIFY THE FILE IS WORKING
+---------------------------
+  After adding alert.mp3, run the app and start a short (3–5 second) timer.
+  When the timer completes, you should hear the chime from the MP3 file.
+  Check the browser console — useAudioAlert logs which audio source is used:
+    [useAudioAlert] Playing via HTMLAudioElement (alert.mp3)
+    [useAudioAlert] alert.mp3 not available, falling back to Web Audio API synthesis
+
+DELETE THIS FILE
+----------------
+  Once you have added alert.mp3, delete this placeholder file:
+    rm public/sounds/alert.mp3.txt
+
+  This .txt file has no effect on the app — it is documentation only.

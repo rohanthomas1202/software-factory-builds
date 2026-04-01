@@ -1,0 +1,105 @@
+{
+  "techStack": {
+    "frontend": "Next.js 14, TypeScript, Tailwind CSS",
+    "backend": "Next.js API Routes (minimal — only used for optional analytics beacon endpoint)",
+    "database": "None — localStorage only for client-side state persistence",
+    "auth": "None — no user accounts required",
+    "hosting": "Vercel",
+    "audio": "Static .mp3 asset served from /public",
+    "testing": "Vitest (unit), Playwright (E2E timer accuracy tests)"
+  },
+  "fileTree": [
+    "src/app/layout.tsx",
+    "src/app/page.tsx",
+    "src/app/globals.css",
+    "src/app/manifest.ts",
+    "src/app/api/beacon/route.ts",
+
+    "src/components/timer/TimerDisplay.tsx",
+    "src/components/timer/TimerControls.tsx",
+    "src/components/timer/DurationInput.tsx",
+    "src/components/timer/PresetButtons.tsx",
+    "src/components/timer/ProgressRing.tsx",
+    "src/components/timer/CompletionAlert.tsx",
+    "src/components/timer/ShortcutOverlay.tsx",
+
+    "src/components/ui/Button.tsx",
+    "src/components/ui/NumericInput.tsx",
+    "src/components/ui/Badge.tsx",
+
+    "src/hooks/useTimer.ts",
+    "src/hooks/useTimerPersistence.ts",
+    "src/hooks/useDocumentTitle.ts",
+    "src/hooks/useKeyboardShortcuts.ts",
+    "src/hooks/useWakeLock.ts",
+    "src/hooks/useNotification.ts",
+    "src/hooks/useAudioAlert.ts",
+
+    "src/lib/timer-engine.ts",
+    "src/lib/time-utils.ts",
+    "src/lib/storage.ts",
+    "src/lib/constants.ts",
+
+    "src/types/timer.ts",
+
+    "public/sounds/alert.mp3",
+    "public/favicon.ico",
+    "public/icons/timer-idle.svg",
+    "public/icons/timer-running.svg",
+    "public/icons/timer-complete.svg",
+
+    "tailwind.config.ts",
+    "next.config.mjs",
+    "tsconfig.json",
+    "package.json",
+
+    "tests/unit/timer-engine.test.ts",
+    "tests/unit/time-utils.test.ts",
+    "tests/unit/useTimer.test.ts",
+    "tests/e2e/timer-flow.spec.ts",
+    "tests/e2e/timer-accuracy.spec.ts",
+    "tests/e2e/persistence.spec.ts",
+    "tests/e2e/accessibility.spec.ts",
+
+    "playwright.config.ts",
+    "vitest.config.ts"
+  ],
+  "apiContracts": [
+    "POST /api/beacon - Optional anonymous analytics event ingestion. Body: { event: 'start' | 'pause' | 'reset' | 'complete' | 'restart', durationMs: number, timestamp: number }. Returns 204 No Content. Entirely optional; app functions without it."
+  ],
+  "designDecisions": [
+    "**Entire app is a single client component tree rooted in page.tsx.** The layout.tsx remains a server component for metadata, fonts, and the HTML shell, but the timer itself is wrapped in a single 'use client' boundary since every piece of UI depends on interactive client state. No server components within the timer — this avoids unnecessary hydration complexity for a fully client-side app.",
+
+    "**Core timer logic lives in `timer-engine.ts` — a pure, framework-agnostic module.** It exports a `createTimerEngine()` factory that manages setInterval, wall-clock drift correction (comparing Date.now() against lastTickTimestamp on every tick), and state transitions. This is independently unit-testable without React. The engine accepts callbacks (onTick, onComplete, onStateChange) and returns imperative methods (start, pause, resume, reset). This separation means the timing logic has zero coupling to React's render cycle.",
+
+    "**`useTimer` hook is the single source of truth for all React state.** It wraps timer-engine.ts with useRef (for the engine instance) and useState/useReducer (for the TimerState exposed to components). A useReducer with a strict state machine matching the PRD's state diagram (idle → running → paused → completed) enforces valid transitions and prevents impossible states. Every component reads from this one hook via prop drilling from page.tsx — no Context needed for this scale.",
+
+    "**Wall-clock drift correction strategy:** Each tick (fired via setInterval at ~100ms for smooth progress, display updates throttled to 1s), the engine reads Date.now(), computes elapsed = now - lastTickTimestamp, and subtracts from remainingMs. This handles browser tab throttling automatically — when the tab wakes up, the next tick sees a large elapsed delta and jumps to the correct time. If remaining <= 0, it clamps to 0 and fires onComplete.",
+
+    "**localStorage persistence is handled by a dedicated `useTimerPersistence` hook.** On every state change and every 1-second tick, it writes { version, status, originalDurationMs, remainingMs, lastTickTimestamp } to localStorage key 'countdown-timer-state'. On mount, it reads this key and returns the hydrated state to useTimer, which initializes accordingly. If status was 'running', the engine auto-resumes after computing wall-clock drift since lastTickTimestamp. This is cleanly separated so the timer works fine if localStorage is unavailable.",
+
+    "**DurationInput uses three controlled `<input type='text' inputMode='numeric'>` elements** instead of `<input type='number'>` to avoid browser-native spinners and inconsistent UX. The `inputMode='numeric'` triggers mobile numeric keyboards (addressing US-1.4). Validation is real-time: non-numeric characters stripped via onChange, clamping applied onBlur, and the auto-select-all-on-focus behavior is handled via onFocus → e.target.select().",
+
+    "**ProgressRing is a lightweight SVG circle** with stroke-dasharray/stroke-dashoffset animated via CSS transitions (transition: stroke-dashoffset 1s linear). The percentage is derived from (originalDurationMs - remainingMs) / originalDurationMs. When `prefers-reduced-motion` is active, transitions are disabled and the ring updates in discrete steps. Total SVG is ~20 lines — no library needed.",
+
+    "**State visualization uses Tailwind CSS dynamic classes** applied to a wrapper div around the entire timer card. Each state maps to a Tailwind color scheme: idle=slate, running=emerald, paused=amber, completed=red with pulse animation. A `timerStateStyles` map in constants.ts centralizes this. The `data-state` attribute on the wrapper enables CSS-only styling without JS for animations.",
+
+    "**Audio alert uses a preloaded HTMLAudioElement.** The `useAudioAlert` hook creates an Audio object on mount pointing to /sounds/alert.mp3 and calls .load() to preload. On completion, it calls .play() wrapped in a try-catch to gracefully handle autoplay policy blocks (AC-8.2). The audio file is kept under 50KB (short chime) to stay within budget.",
+
+    "**Keyboard shortcuts handled by `useKeyboardShortcuts` hook** that attaches a single keydown listener to document. It checks event.target to skip when an input/textarea is focused. The mapping is declarative: { key: 'Space', action: 'toggleStartPause', condition: (state) => ... }. This keeps shortcut logic centralized and testable.",
+
+    "**Document title updates via `useDocumentTitle` hook** that calls document.title = ... on every state change and every second tick. Format: running → 'MM:SS — Countdown Timer', paused → '⏸ MM:SS — Countdown Timer', completed → '⏰ Time\\'s up! — Countdown Timer', idle → 'Countdown Timer'.",
+
+    "**Accessibility: TimerDisplay uses role='timer' with aria-live='polite' and aria-atomic='true'.** To prevent screen readers from announcing every second, the aria-live region only updates its text content every 15 seconds (via a separate throttled ref), except for state transitions (start/pause/complete) which are announced immediately via a visually-hidden aria-live='assertive' status region. All buttons have explicit aria-label attributes. Focus management: on completion, focus moves to the CompletionAlert's Dismiss button.",
+
+    "**Tailwind config extends with custom values:** fontFamily includes a monospace stack ('JetBrains Mono', 'Fira Code', 'Courier New', monospace) with font-variant-numeric: tabular-nums for the timer display. Custom keyframes for the completion pulse animation. The `screens` config matches PRD breakpoints (480px, 768px).",
+
+    "**Next.js config: output 'export' for static site generation.** Since there's no real backend, the app can be exported as a fully static site. The optional /api/beacon route would be removed for static export, or kept if deploying to Vercel with serverless functions. This ensures the entire app is served from CDN edge nodes for sub-1s LCP.",
+
+    "**Bundle size strategy:** No external UI libraries. Tailwind CSS is tree-shaken. The only dependencies beyond Next.js/React/Tailwind are devDependencies (Vitest, Playwright). Target gzipped bundle is well under 50KB since the app is essentially one page with ~500 lines of application logic.",
+
+    "**Component hierarchy:** page.tsx renders a centered card containing: DurationInput (top) → PresetButtons → TimerDisplay with ProgressRing → TimerControls (Start/Pause/Reset buttons) → CompletionAlert (conditionally rendered modal/banner) → ShortcutOverlay (conditionally rendered). All state flows down from page.tsx's useTimer hook. No prop drilling deeper than 2 levels.",
+
+    "**Testing strategy:** timer-engine.ts has pure unit tests with fake timers (vi.useFakeTimers) validating state transitions, drift correction, and edge cases (zero remaining on resume, background tab catch-up). Playwright E2E tests validate the full flow including localStorage persistence (reload mid-timer), completion alerts, keyboard shortcuts, and a timer accuracy test that sets a 10-second timer and asserts completion within ±200ms of wall-clock expectation. Accessibility tests use @axe-core/playwright."
+  ]
+}

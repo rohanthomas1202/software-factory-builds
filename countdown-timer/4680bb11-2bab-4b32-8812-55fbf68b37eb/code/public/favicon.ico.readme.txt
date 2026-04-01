@@ -1,0 +1,32 @@
+PLACEHOLDER — public/favicon.ico
+==================================
+
+The primary favicon for this app is public/favicon.svg, which is supported
+by all modern browsers (Chrome 80+, Firefox 41+, Safari 13+, Edge 80+).
+
+public/favicon.ico is required for legacy browser support (IE 11 and older
+Android/iOS WebViews). The src/app/layout.tsx references both files, with
+favicon.svg as the preferred icon.
+
+HOW TO GENERATE favicon.ico
+----------------------------
+
+Run the included generation script (requires sharp):
+
+  npm install --save-dev sharp
+  node public/favicon-generate.mjs
+
+Or use an online converter:
+  1. Open https://realfavicongenerator.net/
+  2. Upload public/favicon.svg
+  3. Download the generated package
+  4. Place favicon.ico here at public/favicon.ico
+
+SIZES INCLUDED IN favicon.ico
+------------------------------
+  16×16  — Browser tab (legacy)
+  32×32  — Taskbar / bookmarks (legacy)
+  48×48  — Windows desktop shortcut
+
+Until favicon.ico is generated, the app will fall back gracefully to
+favicon.svg in all modern browsers.

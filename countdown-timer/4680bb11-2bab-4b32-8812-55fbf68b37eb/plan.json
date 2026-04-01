@@ -1,0 +1,324 @@
+[
+  {
+    "id": "task-1",
+    "title": "Initialize project configuration and dependencies",
+    "description": "Set up the Next.js 14 project with TypeScript, Tailwind CSS, and all required dev dependencies. Configure tsconfig, Next.js, and Tailwind with custom theme values including monospace fonts, tabular-nums, custom breakpoints, and completion pulse keyframes.",
+    "files": [
+      "package.json",
+      "tsconfig.json",
+      "tailwind.config.ts",
+      "next.config.mjs"
+    ],
+    "dependencies": [],
+    "priority": 1
+  },
+  {
+    "id": "task-2",
+    "title": "Define TypeScript types and constants",
+    "description": "Create all shared TypeScript types for TimerState, TimerStatus enum (idle/running/paused/completed), TimerConfig, TimerPreset, CompletionAlert, and localStorage schema. Define all application constants including preset durations, localStorage key, state-to-Tailwind style mappings, and validation constraints.",
+    "files": [
+      "src/types/timer.ts",
+      "src/lib/constants.ts"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 1
+  },
+  {
+    "id": "task-3",
+    "title": "Implement time utility functions",
+    "description": "Create pure utility functions for time manipulation: milliseconds to HH:MM:SS components, formatting display strings, parsing HH/MM/SS inputs to milliseconds, clamping hours/minutes/seconds to valid ranges, and computing elapsed/remaining percentages.",
+    "files": [
+      "src/lib/time-utils.ts"
+    ],
+    "dependencies": [
+      "task-2"
+    ],
+    "priority": 1
+  },
+  {
+    "id": "task-4",
+    "title": "Implement localStorage persistence layer",
+    "description": "Create the storage module with typed read/write/clear functions for the 'countdown-timer-state' localStorage key. Include schema versioning, safe JSON parse with fallback, and guards for environments where localStorage is unavailable.",
+    "files": [
+      "src/lib/storage.ts"
+    ],
+    "dependencies": [
+      "task-2"
+    ],
+    "priority": 1
+  },
+  {
+    "id": "task-5",
+    "title": "Implement core timer engine",
+    "description": "Build the framework-agnostic timer engine as a pure factory function. Implements wall-clock drift correction using Date.now() comparisons on every ~100ms setInterval tick, state machine transitions (idle→running→paused→completed), display throttling to 1s, and callback interface (onTick, onComplete, onStateChange). Returns imperative API: start, pause, resume, reset.",
+    "files": [
+      "src/lib/timer-engine.ts"
+    ],
+    "dependencies": [
+      "task-2",
+      "task-3"
+    ],
+    "priority": 1
+  },
+  {
+    "id": "task-6",
+    "title": "Set up global styles and app shell",
+    "description": "Create the global CSS file with Tailwind directives, CSS custom properties for state colors, font-variant-numeric tabular-nums, and keyframe animations for the completion pulse. Set up the root layout with HTML metadata, viewport configuration, font loading, and the app manifest.",
+    "files": [
+      "src/app/globals.css",
+      "src/app/layout.tsx",
+      "src/app/manifest.ts"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 2
+  },
+  {
+    "id": "task-7",
+    "title": "Add static public assets",
+    "description": "Add the audio alert MP3 chime file (under 50KB), favicon, and SVG icon assets for idle, running, and completed timer states used for optional favicon swapping.",
+    "files": [
+      "public/sounds/alert.mp3",
+      "public/favicon.ico",
+      "public/icons/timer-idle.svg",
+      "public/icons/timer-running.svg",
+      "public/icons/timer-complete.svg"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 2
+  },
+  {
+    "id": "task-8",
+    "title": "Build reusable UI primitives",
+    "description": "Create the base UI component library. Button component with variants (primary/secondary/danger), aria-label support, disabled states, and focus ring styling. NumericInput with inputMode='numeric', onFocus select-all, real-time non-numeric stripping, and onBlur clamping. Badge component for state indicators.",
+    "files": [
+      "src/components/ui/Button.tsx",
+      "src/components/ui/NumericInput.tsx",
+      "src/components/ui/Badge.tsx"
+    ],
+    "dependencies": [
+      "task-2",
+      "task-6"
+    ],
+    "priority": 2
+  },
+  {
+    "id": "task-9",
+    "title": "Implement custom React hooks — core timer state",
+    "description": "Build the useTimer hook as the single source of truth. Uses useReducer with a strict state machine matching the PRD state diagram, wraps timer-engine.ts via useRef, exposes TimerState and action dispatchers. Integrates wall-clock recovery on mount for persisted running state. Also implement useTimerPersistence hook that reads initial state from storage on mount and writes on every state/tick change.",
+    "files": [
+      "src/hooks/useTimer.ts",
+      "src/hooks/useTimerPersistence.ts"
+    ],
+    "dependencies": [
+      "task-5",
+      "task-4",
+      "task-3"
+    ],
+    "priority": 2
+  },
+  {
+    "id": "task-10",
+    "title": "Implement custom React hooks — side effects",
+    "description": "Build the remaining hooks: useDocumentTitle (updates title every tick and on state changes per PRD formats), useKeyboardShortcuts (single keydown listener, skips when input focused, declarative mapping for Space/R/P/Escape/?), useAudioAlert (preloads HTMLAudioElement, plays with try-catch for autoplay policy), useNotification (Notifications API with permission request), useWakeLock (Screen Wake Lock API to prevent sleep during running state).",
+    "files": [
+      "src/hooks/useDocumentTitle.ts",
+      "src/hooks/useKeyboardShortcuts.ts",
+      "src/hooks/useAudioAlert.ts",
+      "src/hooks/useNotification.ts",
+      "src/hooks/useWakeLock.ts"
+    ],
+    "dependencies": [
+      "task-9",
+      "task-3"
+    ],
+    "priority": 3
+  },
+  {
+    "id": "task-11",
+    "title": "Build DurationInput and PresetButtons components",
+    "description": "Create DurationInput with three controlled NumericInput fields (HH/MM/SS), validation logic showing the 'Please set a duration greater than zero' helper message, disabled state during running/paused, and change handlers that update state. Create PresetButtons showing the 6 default presets with active highlight, disabled during running/paused, and click handler that populates inputs and clears preset selection on manual edit.",
+    "files": [
+      "src/components/timer/DurationInput.tsx",
+      "src/components/timer/PresetButtons.tsx"
+    ],
+    "dependencies": [
+      "task-8",
+      "task-2",
+      "task-3"
+    ],
+    "priority": 3
+  },
+  {
+    "id": "task-12",
+    "title": "Build TimerDisplay component",
+    "description": "Create the large HH:MM:SS display using monospaced/tabular-nums font at minimum 72px. Implements role='timer', aria-live='polite', aria-atomic='true' with 15-second throttled announcements. Includes a visually-hidden aria-live='assertive' region for immediate state transition announcements. Color changes per timer state using data-state attribute and Tailwind state style map.",
+    "files": [
+      "src/components/timer/TimerDisplay.tsx"
+    ],
+    "dependencies": [
+      "task-8",
+      "task-2",
+      "task-3"
+    ],
+    "priority": 3
+  },
+  {
+    "id": "task-13",
+    "title": "Build ProgressRing component",
+    "description": "Create the SVG circular progress ring using stroke-dasharray/stroke-dashoffset technique. Accepts elapsed percentage prop, applies CSS transition (1s linear) for smooth animation, respects prefers-reduced-motion by disabling transitions, freezes at current value when paused, resets to 0% on reset, and becomes visible only during running/paused states.",
+    "files": [
+      "src/components/timer/ProgressRing.tsx"
+    ],
+    "dependencies": [
+      "task-8",
+      "task-2"
+    ],
+    "priority": 3
+  },
+  {
+    "id": "task-14",
+    "title": "Build TimerControls component",
+    "description": "Create the Start/Resume/Pause/Reset button group. Start button label changes between 'Start' and 'Resume' based on state. All buttons use correct disabled logic per the PRD state table (F10). Each button has explicit aria-label. Keyboard shortcut hint labels are displayed below each button as secondary text.",
+    "files": [
+      "src/components/timer/TimerControls.tsx"
+    ],
+    "dependencies": [
+      "task-8",
+      "task-2"
+    ],
+    "priority": 3
+  },
+  {
+    "id": "task-15",
+    "title": "Build CompletionAlert component",
+    "description": "Create the dismissible completion alert/modal with 'Time's up!' text, Dismiss and Restart action buttons, pulse animation on the timer display, and focus management (focus moves to Dismiss button on mount). Handles Escape key to dismiss. Dismiss hides the alert leaving timer in completed state; Restart resets to original duration and immediately starts. Integrates aria-live='assertive' announcement.",
+    "files": [
+      "src/components/timer/CompletionAlert.tsx"
+    ],
+    "dependencies": [
+      "task-8",
+      "task-2"
+    ],
+    "priority": 3
+  },
+  {
+    "id": "task-16",
+    "title": "Build ShortcutOverlay component",
+    "description": "Create the keyboard shortcut help overlay triggered by pressing '?'. Displays a modal with all shortcuts from Appendix A in a readable table format. Dismissible via Escape or clicking outside. Uses aria-modal and focus trap for accessibility.",
+    "files": [
+      "src/components/timer/ShortcutOverlay.tsx"
+    ],
+    "dependencies": [
+      "task-8",
+      "task-2"
+    ],
+    "priority": 4
+  },
+  {
+    "id": "task-17",
+    "title": "Implement optional analytics beacon API route",
+    "description": "Create the minimal Next.js API route for optional anonymous event ingestion. Accepts POST with { event, durationMs, timestamp }, returns 204 No Content. Includes input validation and no-op if body is malformed. Entirely optional — app functions without it.",
+    "files": [
+      "src/app/api/beacon/route.ts"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 4
+  },
+  {
+    "id": "task-18",
+    "title": "Assemble main page — wire all components and hooks together",
+    "description": "Build the main page.tsx as the single 'use client' root. Instantiates useTimer, useTimerPersistence, useDocumentTitle, useKeyboardShortcuts, useAudioAlert, useNotification, and useWakeLock. Composes the full component tree: centered card with data-state wrapper → DurationInput → PresetButtons → TimerDisplay with ProgressRing → TimerControls → CompletionAlert (conditional) → ShortcutOverlay (conditional). Implements responsive layout per PRD breakpoints.",
+    "files": [
+      "src/app/page.tsx"
+    ],
+    "dependencies": [
+      "task-6",
+      "task-9",
+      "task-10",
+      "task-11",
+      "task-12",
+      "task-13",
+      "task-14",
+      "task-15",
+      "task-16"
+    ],
+    "priority": 4
+  },
+  {
+    "id": "task-19",
+    "title": "Configure test infrastructure",
+    "description": "Set up Vitest configuration for unit tests (jsdom environment, fake timers, coverage) and Playwright configuration for E2E tests (chromium/firefox/webkit, base URL, screenshot on failure). Install and configure @axe-core/playwright for accessibility scanning.",
+    "files": [
+      "vitest.config.ts",
+      "playwright.config.ts"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 4
+  },
+  {
+    "id": "task-20",
+    "title": "Write unit tests for pure library modules",
+    "description": "Write comprehensive Vitest unit tests for timer-engine.ts (state transitions, drift correction, background tab catch-up, zero-remaining edge cases, fake timer control) and time-utils.ts (millisecond conversions, formatting, clamping, parsing, boundary values).",
+    "files": [
+      "tests/unit/timer-engine.test.ts",
+      "tests/unit/time-utils.test.ts"
+    ],
+    "dependencies": [
+      "task-5",
+      "task-3",
+      "task-19"
+    ],
+    "priority": 5
+  },
+  {
+    "id": "task-21",
+    "title": "Write unit tests for useTimer hook",
+    "description": "Write Vitest unit tests for the useTimer hook using renderHook and fake timers. Covers: state machine transitions, persistence hydration with running-state wall-clock recovery, paused state restore, completed state on overdue resume, and all action dispatchers.",
+    "files": [
+      "tests/unit/useTimer.test.ts"
+    ],
+    "dependencies": [
+      "task-9",
+      "task-19"
+    ],
+    "priority": 5
+  },
+  {
+    "id": "task-22",
+    "title": "Write Playwright E2E tests — user flows and accuracy",
+    "description": "Write E2E tests covering: full timer flow (set duration → start → pause → resume → reset → complete), preset selection flow, localStorage persistence across page reload mid-countdown, completion alert Dismiss and Restart actions, keyboard shortcut interactions (Space/R/P/Escape/?), and a 10-second timer accuracy test asserting completion within ±200ms of wall-clock expectation.",
+    "files": [
+      "tests/e2e/timer-flow.spec.ts",
+      "tests/e2e/timer-accuracy.spec.ts",
+      "tests/e2e/persistence.spec.ts"
+    ],
+    "dependencies": [
+      "task-18",
+      "task-19"
+    ],
+    "priority": 5
+  },
+  {
+    "id": "task-23",
+    "title": "Write Playwright accessibility E2E tests",
+    "description": "Write accessibility E2E tests using @axe-core/playwright: full axe scan on page load (target 0 violations), keyboard-only navigation through all controls, ARIA role verification for timer display and buttons, color contrast checks across all four timer states, and screen reader announcement region validation.",
+    "files": [
+      "tests/e2e/accessibility.spec.ts"
+    ],
+    "dependencies": [
+      "task-18",
+      "task-19"
+    ],
+    "priority": 5
+  }
+]

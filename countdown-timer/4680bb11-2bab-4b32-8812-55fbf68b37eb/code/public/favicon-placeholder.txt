@@ -1,0 +1,60 @@
+PLACEHOLDER — public/favicon.ico
+==================================
+
+The primary favicon for this app is public/favicon.svg, which is supported
+by all modern browsers (Chrome 80+, Firefox 41+, Safari 13+, Edge 80+).
+
+public/favicon.ico is required for legacy browser support (IE 11 and older
+Android/iOS WebViews). The src/app/layout.tsx references both files, with
+favicon.svg as the preferred icon.
+
+GENERATING favicon.ico
+-----------------------
+
+METHOD 1 — Node.js script (recommended, uses sharp):
+
+  npm install --save-dev sharp
+  node public/favicon-generate.mjs
+
+  This creates a proper multi-resolution ICO (16×16, 32×32, 48×48).
+
+METHOD 2 — Online converter (easy, no install):
+
+  1. Open https://realfavicongenerator.net/
+  2. Upload public/favicon.svg
+  3. Configure as desired
+  4. Download the package
+  5. Place favicon.ico in public/favicon.ico
+
+  OR:
+
+  1. Open https://favicon.io/favicon-converter/
+  2. Upload public/favicon.svg
+  3. Download and extract
+  4. Move favicon.ico → public/favicon.ico
+
+METHOD 3 — ImageMagick CLI:
+
+  convert -background transparent public/favicon.svg \
+    -define icon:auto-resize=16,32,48 \
+    public/favicon.ico
+
+METHOD 4 — ffmpeg (SVG → PNG → ICO):
+
+  # Requires librsvg for SVG support in ffmpeg, or use Inkscape
+  inkscape -w 32 -h 32 public/favicon.svg -o /tmp/favicon32.png
+  inkscape -w 16 -h 16 public/favicon.svg -o /tmp/favicon16.png
+  convert /tmp/favicon16.png /tmp/favicon32.png public/favicon.ico
+
+NOTE ON APP FUNCTIONALITY
+--------------------------
+The app works perfectly without favicon.ico. The SVG favicon is loaded
+in all browsers the app targets. This placeholder only affects legacy
+browser icon display.
+
+DELETE THIS FILE
+-----------------
+This .txt placeholder has no effect on the application. You may delete it
+once you have generated the real favicon.ico.
+
+  rm public/favicon-placeholder.txt
