@@ -1,0 +1,54 @@
+{
+  "projectName": "freelancer-invoicing-saas",
+  "description": "A cloud-based invoicing application designed specifically for freelancers to create, send, and manage professional invoices. The app helps freelancers track payments, manage client information, and generate financial reports. It simplifies billing workflows and ensures timely payments through automated reminders and payment tracking.",
+  "features": [
+    "User authentication and profile management",
+    "Client database with contact and billing information",
+    "Invoice creation with customizable templates and branding",
+    "Automated invoice numbering and tax calculations",
+    "Multiple payment gateway integrations (Stripe, PayPal, etc.)",
+    "Recurring invoice scheduling",
+    "Payment tracking with status indicators (paid, pending, overdue)",
+    "Automated payment reminder emails",
+    "Expense tracking and categorization",
+    "Financial dashboard with revenue insights",
+    "Report generation (profit/loss, tax summaries)",
+    "Multi-currency support for international clients",
+    "Invoice PDF generation and email delivery",
+    "Mobile-responsive web interface",
+    "Data export capabilities (CSV, PDF)"
+  ],
+  "entities": [
+    "User",
+    "Client",
+    "Invoice",
+    "InvoiceItem",
+    "Payment",
+    "Expense",
+    "TaxRate",
+    "PaymentReminder",
+    "Report",
+    "InvoiceTemplate"
+  ],
+  "userFlows": [
+    "User signs up and creates account",
+    "User adds client information to database",
+    "User creates new invoice with line items and taxes",
+    "User sends invoice to client via email",
+    "Client receives invoice and makes payment",
+    "User tracks payment status in dashboard",
+    "User sets up recurring invoices for regular clients",
+    "User receives payment notification",
+    "User generates monthly financial reports",
+    "User exports data for accounting purposes"
+  ],
+  "constraints": [
+    "Must be fully responsive across mobile, tablet, and desktop",
+    "Must comply with GDPR and data privacy regulations",
+    "Must support real-time currency conversion",
+    "Must ensure secure payment processing with PCI compliance",
+    "Must provide offline invoice creation capability",
+    "Must maintain data backup and recovery systems",
+    "Must offer intuitive user interface suitable for non-technical users"
+  ]
+}

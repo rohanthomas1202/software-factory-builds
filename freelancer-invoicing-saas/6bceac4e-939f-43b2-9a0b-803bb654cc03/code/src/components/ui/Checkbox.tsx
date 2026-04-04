@@ -1,0 +1,74 @@
+'use client'
+
+import * as React from 'react'
+import * as CheckboxPrimitive from '@radix-ui/react-checkbox'
+import { Check } from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+const Checkbox = React.forwardRef<
+  React.ElementRef<typeof CheckboxPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root> & {
+    label?: string
+    description?: string
+    error?: string
+  }
+>(({ className, label, description, error, ...props }, ref) => {
+  const id = React.useId()
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-start gap-3">
+        <CheckboxPrimitive.Root
+          ref={ref}
+          id={id}
+          className={cn(
+            'peer h-5 w-5 shrink-0 rounded border border-input bg-background transition-all',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+            'disabled:cursor-not-allowed disabled:opacity-50',
+            'data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
+            error && 'border-destructive',
+            className
+          )}
+          {...props}
+        >
+          <CheckboxPrimitive.Indicator className="flex items-center justify-center text-current">
+            <Check className="h-3.5 w-3.5" strokeWidth={3} />
+          </CheckboxPrimitive.Indicator>
+        </CheckboxPrimitive.Root>
+        
+        {(label || description) && (
+          <div className="flex flex-col gap-0.5">
+            {label && (
+              <label
+                htmlFor={id}
+                className={cn(
+                  'text-sm font-medium leading-none cursor-pointer select-none',
+                  props.disabled && 'opacity-50 cursor-not-allowed',
+                  error && 'text-destructive'
+                )}
+              >
+                {label}
+              </label>
+            )}
+            {description && (
+              <p className={cn(
+                'text-sm text-muted-foreground',
+                props.disabled && 'opacity-50'
+              )}>
+                {description}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+      
+      {error && (
+        <p className="text-sm text-destructive mt-1">{error}</p>
+      )}
+    </div>
+  )
+})
+
+Checkbox.displayName = 'Checkbox'
+
+export { Checkbox }

@@ -1,0 +1,256 @@
+[
+  {
+    "id": "task-1",
+    "title": "Set up project structure and configuration",
+    "description": "Create the base Next.js project with TypeScript, Tailwind, and required dependencies",
+    "files": [
+      "package.json",
+      "tsconfig.json",
+      "tailwind.config.ts",
+      "src/app/globals.css",
+      "src/app/layout.tsx",
+      "src/lib/utils.ts"
+    ],
+    "dependencies": [],
+    "priority": 1
+  },
+  {
+    "id": "task-2",
+    "title": "Create core types and data models",
+    "description": "Define TypeScript interfaces for all entities (User, Client, Invoice, etc.) and create the in-memory store",
+    "files": [
+      "src/types/index.ts",
+      "src/lib/store.ts",
+      "src/lib/seed.ts"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 2
+  },
+  {
+    "id": "task-3",
+    "title": "Implement authentication utilities and middleware",
+    "description": "Create auth helper functions and middleware to protect routes",
+    "files": [
+      "src/lib/auth.ts",
+      "src/middleware.ts"
+    ],
+    "dependencies": [
+      "task-2"
+    ],
+    "priority": 3
+  },
+  {
+    "id": "task-4",
+    "title": "Build UI components foundation",
+    "description": "Create reusable UI components (Button, Input, Modal, Badge, Card, Table, Select, Textarea)",
+    "files": [
+      "src/components/ui/Button.tsx",
+      "src/components/ui/Input.tsx",
+      "src/components/ui/Modal.tsx",
+      "src/components/ui/Badge.tsx",
+      "src/components/ui/Card.tsx",
+      "src/components/ui/Table.tsx",
+      "src/components/ui/Select.tsx",
+      "src/components/ui/Textarea.tsx"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 4
+  },
+  {
+    "id": "task-5",
+    "title": "Create authentication pages and API routes",
+    "description": "Build login/register pages and implement auth API endpoints",
+    "files": [
+      "src/app/(auth)/login/page.tsx",
+      "src/app/(auth)/register/page.tsx",
+      "src/app/api/auth/login/route.ts",
+      "src/app/api/auth/register/route.ts",
+      "src/app/api/auth/logout/route.ts",
+      "src/app/api/auth/me/route.ts"
+    ],
+    "dependencies": [
+      "task-3",
+      "task-4"
+    ],
+    "priority": 5
+  },
+  {
+    "id": "task-6",
+    "title": "Create layout components (Sidebar, TopBar, PageHeader)",
+    "description": "Build dashboard layout components for navigation",
+    "files": [
+      "src/components/layout/Sidebar.tsx",
+      "src/components/layout/TopBar.tsx",
+      "src/components/layout/PageHeader.tsx",
+      "src/app/(dashboard)/layout.tsx"
+    ],
+    "dependencies": [
+      "task-4"
+    ],
+    "priority": 6
+  },
+  {
+    "id": "task-7",
+    "title": "Implement client management API and pages",
+    "description": "Create client CRUD API endpoints and UI pages",
+    "files": [
+      "src/app/api/clients/route.ts",
+      "src/app/api/clients/[id]/route.ts",
+      "src/components/clients/ClientForm.tsx",
+      "src/components/clients/ClientCard.tsx",
+      "src/app/(dashboard)/clients/page.tsx",
+      "src/app/(dashboard)/clients/new/page.tsx",
+      "src/app/(dashboard)/clients/[id]/page.tsx"
+    ],
+    "dependencies": [
+      "task-2",
+      "task-4",
+      "task-6"
+    ],
+    "priority": 7
+  },
+  {
+    "id": "task-8",
+    "title": "Create invoice utilities and currency support",
+    "description": "Implement invoice calculation utilities and currency data",
+    "files": [
+      "src/lib/invoice-utils.ts",
+      "src/lib/currencies.ts"
+    ],
+    "dependencies": [
+      "task-2"
+    ],
+    "priority": 8
+  },
+  {
+    "id": "task-9",
+    "title": "Build invoice components (Form, LineItems, Preview, StatusBadge)",
+    "description": "Create reusable invoice UI components",
+    "files": [
+      "src/components/invoices/InvoiceForm.tsx",
+      "src/components/invoices/InvoiceLineItems.tsx",
+      "src/components/invoices/InvoicePreview.tsx",
+      "src/components/invoices/InvoiceStatusBadge.tsx"
+    ],
+    "dependencies": [
+      "task-4",
+      "task-8"
+    ],
+    "priority": 9
+  },
+  {
+    "id": "task-10",
+    "title": "Implement invoice management API and pages",
+    "description": "Create invoice CRUD API endpoints and UI pages",
+    "files": [
+      "src/app/api/invoices/route.ts",
+      "src/app/api/invoices/[id]/route.ts",
+      "src/app/api/invoices/[id]/send/route.ts",
+      "src/app/api/invoices/[id]/status/route.ts",
+      "src/app/(dashboard)/invoices/page.tsx",
+      "src/app/(dashboard)/invoices/new/page.tsx",
+      "src/app/(dashboard)/invoices/[id]/page.tsx",
+      "src/app/(dashboard)/invoices/[id]/edit/page.tsx"
+    ],
+    "dependencies": [
+      "task-2",
+      "task-9"
+    ],
+    "priority": 10
+  },
+  {
+    "id": "task-11",
+    "title": "Create public invoice view page",
+    "description": "Build the public-facing invoice page accessible without authentication",
+    "files": [
+      "src/app/invoice/[id]/page.tsx"
+    ],
+    "dependencies": [
+      "task-4",
+      "task-9"
+    ],
+    "priority": 11
+  },
+  {
+    "id": "task-12",
+    "title": "Implement expense management API and pages",
+    "description": "Create expense CRUD API endpoints and UI components",
+    "files": [
+      "src/app/api/expenses/route.ts",
+      "src/app/api/expenses/[id]/route.ts",
+      "src/components/expenses/ExpenseForm.tsx",
+      "src/app/(dashboard)/expenses/page.tsx",
+      "src/app/(dashboard)/expenses/new/page.tsx"
+    ],
+    "dependencies": [
+      "task-2",
+      "task-4",
+      "task-6"
+    ],
+    "priority": 12
+  },
+  {
+    "id": "task-13",
+    "title": "Create dashboard components and API",
+    "description": "Build dashboard stats cards, charts, and API endpoint",
+    "files": [
+      "src/components/dashboard/StatsCard.tsx",
+      "src/components/dashboard/RecentInvoices.tsx",
+      "src/components/dashboard/RevenueChart.tsx",
+      "src/app/api/dashboard/route.ts",
+      "src/app/(dashboard)/dashboard/page.tsx"
+    ],
+    "dependencies": [
+      "task-2",
+      "task-4",
+      "task-6"
+    ],
+    "priority": 13
+  },
+  {
+    "id": "task-14",
+    "title": "Implement reports API and page",
+    "description": "Create report generation API and UI page",
+    "files": [
+      "src/app/api/reports/route.ts",
+      "src/app/(dashboard)/reports/page.tsx"
+    ],
+    "dependencies": [
+      "task-2",
+      "task-4",
+      "task-6"
+    ],
+    "priority": 14
+  },
+  {
+    "id": "task-15",
+    "title": "Create settings API and page",
+    "description": "Implement user settings management",
+    "files": [
+      "src/app/api/settings/route.ts",
+      "src/app/(dashboard)/settings/page.tsx"
+    ],
+    "dependencies": [
+      "task-2",
+      "task-4",
+      "task-6"
+    ],
+    "priority": 15
+  },
+  {
+    "id": "task-16",
+    "title": "Create landing/home page",
+    "description": "Build the main landing page for non-authenticated users",
+    "files": [
+      "src/app/page.tsx"
+    ],
+    "dependencies": [
+      "task-4"
+    ],
+    "priority": 16
+  }
+]
