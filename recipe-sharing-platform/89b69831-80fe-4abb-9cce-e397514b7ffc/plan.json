@@ -1,0 +1,367 @@
+[
+  {
+    "id": "task-1",
+    "title": "Set up project structure and configuration",
+    "description": "Create the base Next.js project with TypeScript, Tailwind, and required dependencies",
+    "files": [
+      "package.json",
+      "tsconfig.json",
+      "tailwind.config.ts",
+      "next.config.ts",
+      "src/app/globals.css",
+      "src/app/layout.tsx"
+    ],
+    "dependencies": [],
+    "priority": 1
+  },
+  {
+    "id": "task-2",
+    "title": "Create core type definitions and utilities",
+    "description": "Define TypeScript interfaces for all entities and create utility functions",
+    "files": [
+      "src/types/index.ts",
+      "src/lib/utils.ts"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 2
+  },
+  {
+    "id": "task-3",
+    "title": "Implement in-memory data store and seed data",
+    "description": "Create the singleton store with Maps/Arrays and seed with initial mock data",
+    "files": [
+      "src/lib/store.ts",
+      "src/lib/seed.ts"
+    ],
+    "dependencies": [
+      "task-2"
+    ],
+    "priority": 3
+  },
+  {
+    "id": "task-4",
+    "title": "Build authentication library and session management",
+    "description": "Implement cookie-based auth with bcryptjs and iron-session pattern",
+    "files": [
+      "src/lib/auth.ts"
+    ],
+    "dependencies": [
+      "task-2",
+      "task-3"
+    ],
+    "priority": 4
+  },
+  {
+    "id": "task-5",
+    "title": "Create reusable UI components",
+    "description": "Build foundational UI components (Button, Input, Modal, etc.) with Tailwind",
+    "files": [
+      "src/components/ui/Button.tsx",
+      "src/components/ui/Input.tsx",
+      "src/components/ui/Textarea.tsx",
+      "src/components/ui/Select.tsx",
+      "src/components/ui/Badge.tsx",
+      "src/components/ui/Avatar.tsx",
+      "src/components/ui/Modal.tsx",
+      "src/components/ui/Spinner.tsx"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 5
+  },
+  {
+    "id": "task-6",
+    "title": "Implement toast notification system",
+    "description": "Create toast context, hook, and component for user feedback",
+    "files": [
+      "src/components/ui/Toast.tsx",
+      "src/hooks/useToast.ts"
+    ],
+    "dependencies": [
+      "task-5"
+    ],
+    "priority": 6
+  },
+  {
+    "id": "task-7",
+    "title": "Build authentication API routes",
+    "description": "Create register, login, logout, and session check endpoints",
+    "files": [
+      "src/app/api/auth/register/route.ts",
+      "src/app/api/auth/login/route.ts",
+      "src/app/api/auth/logout/route.ts",
+      "src/app/api/auth/me/route.ts"
+    ],
+    "dependencies": [
+      "task-3",
+      "task-4"
+    ],
+    "priority": 7
+  },
+  {
+    "id": "task-8",
+    "title": "Create authentication pages",
+    "description": "Build login and registration pages with forms",
+    "files": [
+      "src/app/(auth)/login/page.tsx",
+      "src/app/(auth)/register/page.tsx"
+    ],
+    "dependencies": [
+      "task-5",
+      "task-6",
+      "task-7"
+    ],
+    "priority": 8
+  },
+  {
+    "id": "task-9",
+    "title": "Implement authentication hooks",
+    "description": "Create useAuth hook for managing user session state",
+    "files": [
+      "src/hooks/useAuth.ts"
+    ],
+    "dependencies": [
+      "task-4",
+      "task-7"
+    ],
+    "priority": 9
+  },
+  {
+    "id": "task-10",
+    "title": "Build layout components",
+    "description": "Create Navbar and Footer components for consistent layout",
+    "files": [
+      "src/components/layout/Navbar.tsx",
+      "src/components/layout/Footer.tsx"
+    ],
+    "dependencies": [
+      "task-5",
+      "task-9"
+    ],
+    "priority": 10
+  },
+  {
+    "id": "task-11",
+    "title": "Create recipe UI components",
+    "description": "Build reusable recipe components (Card, Grid, Rating, etc.)",
+    "files": [
+      "src/components/recipe/RecipeCard.tsx",
+      "src/components/recipe/RecipeGrid.tsx",
+      "src/components/recipe/StarRating.tsx",
+      "src/components/recipe/IngredientList.tsx",
+      "src/components/recipe/InstructionList.tsx",
+      "src/components/recipe/RecipeFilters.tsx"
+    ],
+    "dependencies": [
+      "task-5",
+      "task-6"
+    ],
+    "priority": 11
+  },
+  {
+    "id": "task-12",
+    "title": "Implement recipe API routes",
+    "description": "Create CRUD endpoints for recipes, ratings, comments, and saves",
+    "files": [
+      "src/app/api/recipes/route.ts",
+      "src/app/api/recipes/[id]/route.ts",
+      "src/app/api/recipes/[id]/rating/route.ts",
+      "src/app/api/recipes/[id]/comments/route.ts",
+      "src/app/api/recipes/[id]/save/route.ts"
+    ],
+    "dependencies": [
+      "task-3",
+      "task-4"
+    ],
+    "priority": 12
+  },
+  {
+    "id": "task-13",
+    "title": "Build homepage and recipe browsing",
+    "description": "Create main landing page with recipe grid and search",
+    "files": [
+      "src/app/page.tsx",
+      "src/app/recipes/page.tsx"
+    ],
+    "dependencies": [
+      "task-10",
+      "task-11",
+      "task-12"
+    ],
+    "priority": 13
+  },
+  {
+    "id": "task-14",
+    "title": "Create recipe detail page",
+    "description": "Build individual recipe page with full details and interactions",
+    "files": [
+      "src/app/recipes/[id]/page.tsx",
+      "src/components/recipe/CommentSection.tsx"
+    ],
+    "dependencies": [
+      "task-11",
+      "task-12"
+    ],
+    "priority": 14
+  },
+  {
+    "id": "task-15",
+    "title": "Build recipe creation and editing",
+    "description": "Create form for creating/editing recipes with dynamic fields",
+    "files": [
+      "src/components/recipe/RecipeForm.tsx",
+      "src/app/recipes/create/page.tsx",
+      "src/app/recipes/[id]/edit/page.tsx"
+    ],
+    "dependencies": [
+      "task-5",
+      "task-6",
+      "task-12"
+    ],
+    "priority": 15
+  },
+  {
+    "id": "task-16",
+    "title": "Create user profile components",
+    "description": "Build profile header, stats, and related UI components",
+    "files": [
+      "src/components/profile/ProfileHeader.tsx",
+      "src/components/profile/ProfileStats.tsx"
+    ],
+    "dependencies": [
+      "task-5"
+    ],
+    "priority": 16
+  },
+  {
+    "id": "task-17",
+    "title": "Implement user API routes",
+    "description": "Create endpoints for user profiles, following, and user recipes",
+    "files": [
+      "src/app/api/users/[username]/route.ts",
+      "src/app/api/users/[username]/follow/route.ts",
+      "src/app/api/users/[username]/recipes/route.ts"
+    ],
+    "dependencies": [
+      "task-3",
+      "task-4"
+    ],
+    "priority": 17
+  },
+  {
+    "id": "task-18",
+    "title": "Build user profile pages",
+    "description": "Create public profile view and profile editing pages",
+    "files": [
+      "src/app/profile/[username]/page.tsx",
+      "src/app/profile/edit/page.tsx"
+    ],
+    "dependencies": [
+      "task-16",
+      "task-17"
+    ],
+    "priority": 18
+  },
+  {
+    "id": "task-19",
+    "title": "Create feed and saved recipes API routes",
+    "description": "Implement endpoints for personalized feed and saved recipes",
+    "files": [
+      "src/app/api/feed/route.ts",
+      "src/app/api/saved/route.ts"
+    ],
+    "dependencies": [
+      "task-3",
+      "task-4"
+    ],
+    "priority": 19
+  },
+  {
+    "id": "task-20",
+    "title": "Build feed and saved recipes pages",
+    "description": "Create pages for viewing followed users' recipes and saved collections",
+    "files": [
+      "src/app/feed/page.tsx",
+      "src/app/saved/page.tsx"
+    ],
+    "dependencies": [
+      "task-11",
+      "task-19"
+    ],
+    "priority": 20
+  },
+  {
+    "id": "task-21",
+    "title": "Implement admin API routes",
+    "description": "Create endpoints for admin user and recipe management",
+    "files": [
+      "src/app/api/admin/users/route.ts",
+      "src/app/api/admin/recipes/route.ts"
+    ],
+    "dependencies": [
+      "task-3",
+      "task-4"
+    ],
+    "priority": 21
+  },
+  {
+    "id": "task-22",
+    "title": "Build admin dashboard page",
+    "description": "Create admin interface for content moderation and user management",
+    "files": [
+      "src/app/admin/page.tsx"
+    ],
+    "dependencies": [
+      "task-5",
+      "task-21"
+    ],
+    "priority": 22
+  },
+  {
+    "id": "task-23",
+    "title": "Create recipe data hooks",
+    "description": "Implement useRecipes hook for fetching and managing recipe data",
+    "files": [
+      "src/hooks/useRecipes.ts"
+    ],
+    "dependencies": [
+      "task-12"
+    ],
+    "priority": 23
+  },
+  {
+    "id": "task-24",
+    "title": "Final integration and testing",
+    "description": "Test all pages, fix any integration issues, and verify all features work together",
+    "files": [],
+    "dependencies": [
+      "task-1",
+      "task-2",
+      "task-3",
+      "task-4",
+      "task-5",
+      "task-6",
+      "task-7",
+      "task-8",
+      "task-9",
+      "task-10",
+      "task-11",
+      "task-12",
+      "task-13",
+      "task-14",
+      "task-15",
+      "task-16",
+      "task-17",
+      "task-18",
+      "task-19",
+      "task-20",
+      "task-21",
+      "task-22",
+      "task-23"
+    ],
+    "priority": 24
+  }
+]
