@@ -1,0 +1,45 @@
+{
+  "projectName": "kanban-project-management",
+  "description": "A collaborative project management tool featuring kanban boards for visualizing workflows. Teams can organize tasks, track progress, and communicate in real-time to improve productivity and coordination across projects.",
+  "features": [
+    "User authentication and role-based access",
+    "Create and customize kanban boards with columns",
+    "Drag-and-drop task cards between columns",
+    "Assign tasks to team members with due dates",
+    "Real-time collaboration and notifications",
+    "File attachments and comments on tasks",
+    "Progress tracking and analytics dashboard",
+    "Team management and invitation system",
+    "Mobile-responsive design",
+    "Search and filter tasks by status or assignee"
+  ],
+  "entities": [
+    "User",
+    "Project",
+    "KanbanBoard",
+    "Task",
+    "Team",
+    "Comment",
+    "Attachment",
+    "Notification",
+    "Invitation",
+    "Analytics"
+  ],
+  "userFlows": [
+    "User signs up and creates a profile",
+    "User creates a new project and kanban board",
+    "User invites team members to join the project",
+    "User adds tasks to the kanban board with details",
+    "User drags tasks between columns to update status",
+    "Team members comment and attach files to tasks",
+    "User views progress analytics on dashboard",
+    "User receives notifications for task updates"
+  ],
+  "constraints": [
+    "Must be responsive across desktop and mobile devices",
+    "Real-time updates for collaborative features",
+    "Secure user authentication and data protection",
+    "Scalable to support large teams and projects",
+    "Intuitive drag-and-drop interface"
+  ]
+}

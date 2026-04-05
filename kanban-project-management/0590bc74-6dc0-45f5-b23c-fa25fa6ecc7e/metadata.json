@@ -1,0 +1,19 @@
+{
+  "buildId": "0590bc74-6dc0-45f5-b23c-fa25fa6ecc7e",
+  "prompt": "Build a project management tool with kanban boards and team collaboration",
+  "projectName": "kanban-project-management",
+  "runNumber": 2,
+  "status": "complete",
+  "createdAt": 1775344895412,
+  "completedAt": 1775351455004,
+  "durationMs": 6559592,
+  "repoUrl": "https://github.com/rohanthomas1202/kanban-project-management",
+  "deployUrl": "https://kanban-project-management-cfver9fsu-rohan-2162s-projects.vercel.app",
+  "reviewScore": 70,
+  "reviewIteration": 3,
+  "totalUsage": {
+    "inputTokens": 955050,
+    "outputTokens": 401112,
+    "cost": 2.23023718
+  }
+}

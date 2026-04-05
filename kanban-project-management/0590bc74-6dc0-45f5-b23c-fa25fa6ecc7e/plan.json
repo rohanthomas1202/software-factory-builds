@@ -1,0 +1,281 @@
+[
+  {
+    "id": "task-1",
+    "title": "Set up project structure and configuration",
+    "description": "Create the base Next.js project with TypeScript, Tailwind, and required dependencies",
+    "files": [
+      "package.json",
+      "tsconfig.json",
+      "tailwind.config.ts",
+      "next.config.ts",
+      "src/app/globals.css"
+    ],
+    "dependencies": [],
+    "priority": 1
+  },
+  {
+    "id": "task-2",
+    "title": "Create core type definitions and utilities",
+    "description": "Define TypeScript interfaces for all entities and create utility functions",
+    "files": [
+      "src/lib/types.ts",
+      "src/lib/utils.ts"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 2
+  },
+  {
+    "id": "task-3",
+    "title": "Implement in-memory data store and seed data",
+    "description": "Create singleton store with Maps for all entities and populate with demo data",
+    "files": [
+      "src/lib/store.ts",
+      "src/lib/seed.ts"
+    ],
+    "dependencies": [
+      "task-2"
+    ],
+    "priority": 3
+  },
+  {
+    "id": "task-4",
+    "title": "Build authentication system",
+    "description": "Create auth utilities, API routes, and middleware for session management",
+    "files": [
+      "src/lib/auth.ts",
+      "src/middleware.ts",
+      "src/app/api/auth/login/route.ts",
+      "src/app/api/auth/register/route.ts",
+      "src/app/api/auth/logout/route.ts",
+      "src/app/api/auth/me/route.ts"
+    ],
+    "dependencies": [
+      "task-3"
+    ],
+    "priority": 4
+  },
+  {
+    "id": "task-5",
+    "title": "Create base layout and UI components",
+    "description": "Build main layout, navbar, sidebar, and reusable UI components",
+    "files": [
+      "src/app/layout.tsx",
+      "src/components/layout/Navbar.tsx",
+      "src/components/layout/Sidebar.tsx",
+      "src/components/layout/PageHeader.tsx",
+      "src/components/ui/Button.tsx",
+      "src/components/ui/Input.tsx",
+      "src/components/ui/Badge.tsx",
+      "src/components/ui/Avatar.tsx",
+      "src/components/ui/Spinner.tsx",
+      "src/components/ui/Modal.tsx",
+      "src/components/ui/Dropdown.tsx",
+      "src/components/ui/Toast.tsx"
+    ],
+    "dependencies": [
+      "task-4"
+    ],
+    "priority": 5
+  },
+  {
+    "id": "task-6",
+    "title": "Implement authentication pages",
+    "description": "Create login and registration pages with form handling",
+    "files": [
+      "src/app/(auth)/login/page.tsx",
+      "src/app/(auth)/register/page.tsx"
+    ],
+    "dependencies": [
+      "task-5"
+    ],
+    "priority": 6
+  },
+  {
+    "id": "task-7",
+    "title": "Create custom React hooks",
+    "description": "Build hooks for authentication, projects, boards, and tasks with SWR pattern",
+    "files": [
+      "src/hooks/useAuth.ts",
+      "src/hooks/useProjects.ts",
+      "src/hooks/useBoard.ts",
+      "src/hooks/useTasks.ts"
+    ],
+    "dependencies": [
+      "task-6"
+    ],
+    "priority": 7
+  },
+  {
+    "id": "task-8",
+    "title": "Build project API routes",
+    "description": "Implement CRUD operations for projects and boards",
+    "files": [
+      "src/app/api/projects/route.ts",
+      "src/app/api/projects/[projectId]/route.ts",
+      "src/app/api/boards/route.ts",
+      "src/app/api/boards/[boardId]/route.ts"
+    ],
+    "dependencies": [
+      "task-7"
+    ],
+    "priority": 8
+  },
+  {
+    "id": "task-9",
+    "title": "Create project management pages",
+    "description": "Build dashboard, projects list, and project creation pages",
+    "files": [
+      "src/app/dashboard/layout.tsx",
+      "src/app/dashboard/page.tsx",
+      "src/app/projects/page.tsx",
+      "src/app/projects/new/page.tsx",
+      "src/components/projects/ProjectCard.tsx",
+      "src/components/projects/CreateProjectModal.tsx"
+    ],
+    "dependencies": [
+      "task-8"
+    ],
+    "priority": 9
+  },
+  {
+    "id": "task-10",
+    "title": "Build column and task API routes",
+    "description": "Implement CRUD operations for columns, tasks, and task movement",
+    "files": [
+      "src/app/api/columns/route.ts",
+      "src/app/api/columns/[columnId]/route.ts",
+      "src/app/api/tasks/route.ts",
+      "src/app/api/tasks/[taskId]/route.ts",
+      "src/app/api/tasks/[taskId]/move/route.ts"
+    ],
+    "dependencies": [
+      "task-9"
+    ],
+    "priority": 10
+  },
+  {
+    "id": "task-11",
+    "title": "Create task management components",
+    "description": "Build task detail view, comment thread, and task-related UI components",
+    "files": [
+      "src/components/tasks/TaskDetail.tsx",
+      "src/components/tasks/TaskDetailModal.tsx",
+      "src/components/tasks/CommentThread.tsx",
+      "src/components/tasks/PriorityBadge.tsx",
+      "src/components/tasks/AssigneePicker.tsx",
+      "src/components/tasks/DueDatePicker.tsx"
+    ],
+    "dependencies": [
+      "task-10"
+    ],
+    "priority": 11
+  },
+  {
+    "id": "task-12",
+    "title": "Build kanban board components",
+    "description": "Create main board, column, and task card components with drag-and-drop",
+    "files": [
+      "src/components/board/KanbanBoard.tsx",
+      "src/components/board/KanbanColumn.tsx",
+      "src/components/board/TaskCard.tsx",
+      "src/components/board/AddColumnForm.tsx",
+      "src/components/board/AddTaskForm.tsx"
+    ],
+    "dependencies": [
+      "task-11"
+    ],
+    "priority": 12
+  },
+  {
+    "id": "task-13",
+    "title": "Create board page layout",
+    "description": "Build the main board view page with dynamic routing",
+    "files": [
+      "src/app/board/[boardId]/layout.tsx",
+      "src/app/board/[boardId]/page.tsx"
+    ],
+    "dependencies": [
+      "task-12"
+    ],
+    "priority": 13
+  },
+  {
+    "id": "task-14",
+    "title": "Implement comment API routes",
+    "description": "Create CRUD operations for task comments",
+    "files": [
+      "src/app/api/comments/route.ts",
+      "src/app/api/comments/[commentId]/route.ts"
+    ],
+    "dependencies": [
+      "task-13"
+    ],
+    "priority": 14
+  },
+  {
+    "id": "task-15",
+    "title": "Build team management API and components",
+    "description": "Implement team API routes and UI components for member management",
+    "files": [
+      "src/app/api/team/route.ts",
+      "src/app/api/team/invite/route.ts",
+      "src/components/team/TeamMemberList.tsx",
+      "src/components/team/InviteModal.tsx"
+    ],
+    "dependencies": [
+      "task-14"
+    ],
+    "priority": 15
+  },
+  {
+    "id": "task-16",
+    "title": "Create analytics API and components",
+    "description": "Build analytics computation API and chart components",
+    "files": [
+      "src/app/api/analytics/route.ts",
+      "src/components/analytics/TasksChart.tsx",
+      "src/components/analytics/WorkloadChart.tsx",
+      "src/components/analytics/StatCard.tsx"
+    ],
+    "dependencies": [
+      "task-15"
+    ],
+    "priority": 16
+  },
+  {
+    "id": "task-17",
+    "title": "Build analytics page",
+    "description": "Create the analytics dashboard page",
+    "files": [
+      "src/app/analytics/page.tsx"
+    ],
+    "dependencies": [
+      "task-16"
+    ],
+    "priority": 17
+  },
+  {
+    "id": "task-18",
+    "title": "Create home page",
+    "description": "Build the landing/home page",
+    "files": [
+      "src/app/page.tsx"
+    ],
+    "dependencies": [
+      "task-17"
+    ],
+    "priority": 18
+  },
+  {
+    "id": "task-19",
+    "title": "Final integration and testing",
+    "description": "Test all components, fix integration issues, and ensure proper routing",
+    "files": [],
+    "dependencies": [
+      "task-18"
+    ],
+    "priority": 19
+  }
+]
