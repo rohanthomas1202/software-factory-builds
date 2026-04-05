@@ -1,0 +1,255 @@
+[
+  {
+    "id": "task-1",
+    "title": "Set up project foundation: config, types, and store",
+    "description": "Create package.json with dependencies (Next.js, TypeScript, Tailwind, Recharts). Configure tsconfig.json and tailwind.config.ts. Define core TypeScript interfaces (User, Category, Transaction, MonthlyBudgetSummary) in src/lib/types.ts. Implement in-memory store (src/lib/store.ts) with Maps for each entity, seed function, and data isolation helpers. Create seed data in src/lib/seed.ts.",
+    "files": [
+      "package.json",
+      "tsconfig.json",
+      "tailwind.config.ts",
+      "src/lib/types.ts",
+      "src/lib/store.ts",
+      "src/lib/seed.ts"
+    ],
+    "dependencies": [],
+    "priority": 1,
+    "risk": "low",
+    "notes": "Store must export typed Maps (users, categories, transactions, monthlyBudgetSummary). Seed function creates two demo users with default categories and sample transactions. Ensure all maps are keyed by user_id for isolation."
+  },
+  {
+    "id": "task-2",
+    "title": "Build authentication library and session management",
+    "description": "Implement src/lib/auth.ts with password validation (plaintext for MVP) and user lookup. Create src/lib/session.ts with a Map<token, userId> for session storage, plus functions to create/verify/clear sessions. Ensure all functions are typed.",
+    "files": [
+      "src/lib/auth.ts",
+      "src/lib/session.ts"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 1,
+    "risk": "medium",
+    "notes": "Session tokens are UUID strings (crypto.randomUUID). No JWT or bcrypt per design decision. Plaintext passwords must be clearly commented as MVP-only. Auth functions must validate user existence and password match."
+  },
+  {
+    "id": "task-3",
+    "title": "Implement auth API routes: register, login, logout",
+    "description": "Build POST /api/auth/register route: validate input, create user, seed default categories, create session, set HttpOnly cookie. Build POST /api/auth/login route: validate credentials, create session, set cookie. Build POST /api/auth/logout route: clear session and cookie. All routes must return appropriate status codes (201, 200, 401, 400).",
+    "files": [
+      "src/app/api/auth/register/route.ts",
+      "src/app/api/auth/login/route.ts",
+      "src/app/api/auth/logout/route.ts"
+    ],
+    "dependencies": [
+      "task-1",
+      "task-2"
+    ],
+    "priority": 1,
+    "risk": "medium",
+    "notes": "Register must call seed function for user's default categories. Cookies must be HttpOnly, secure in production. Logout must delete token from session Map. Return user object without password_hash."
+  },
+  {
+    "id": "task-4",
+    "title": "Build categories API routes (GET, POST, PATCH, DELETE)",
+    "description": "Implement GET /api/categories: returns all categories for authenticated user. POST /api/categories: creates a custom category, enforces unique name per user. PATCH /api/categories/[id]: updates name or limit_cents, validates ownership. DELETE /api/categories/[id]: blocks if linked transactions exist, returns 409 with count.",
+    "files": [
+      "src/app/api/categories/route.ts",
+      "src/app/api/categories/[id]/route.ts"
+    ],
+    "dependencies": [
+      "task-1",
+      "task-2"
+    ],
+    "priority": 2,
+    "risk": "low",
+    "notes": "All endpoints must validate session and filter by user_id. DELETE must check transaction count in store before allowing. PATCH must prevent name conflicts."
+  },
+  {
+    "id": "task-5",
+    "title": "Build categories reassign API and UI form component",
+    "description": "Implement PATCH /api/categories/[id]/reassign: validates source/target ownership, updates all transactions' category_id, updates MonthlyBudgetSummary rows, then deletes source category. Create CategoryForm component for creating/editing categories with fields for name, type, and limit_cents, plus validation.",
+    "files": [
+      "src/app/api/categories/[id]/reassign/route.ts",
+      "src/components/CategoryForm.tsx"
+    ],
+    "dependencies": [
+      "task-1",
+      "task-4"
+    ],
+    "priority": 2,
+    "risk": "medium",
+    "notes": "Reassign endpoint must update both transactions and monthly summaries synchronously. CategoryForm must handle both create and edit modes, show validation errors, and disable submit when invalid."
+  },
+  {
+    "id": "task-6",
+    "title": "Build transactions API routes (GET, POST, PATCH, DELETE) and budget utilities",
+    "description": "Implement GET /api/transactions with optional year_month and category_id filters. POST /api/transactions: validates amount >0, category ownership, computes budget warning (90% threshold) using budgetUtils, updates MonthlyBudgetSummary. PATCH and DELETE routes with ownership checks and summary updates. Create src/lib/budgetUtils.ts for warning logic and spending calculations.",
+    "files": [
+      "src/app/api/transactions/route.ts",
+      "src/app/api/transactions/[id]/route.ts",
+      "src/lib/budgetUtils.ts"
+    ],
+    "dependencies": [
+      "task-1",
+      "task-2",
+      "task-4"
+    ],
+    "priority": 2,
+    "risk": "medium",
+    "notes": "POST must return budget_warning in response if threshold crossed. All transaction mutations must synchronously update MonthlyBudgetSummary Map. Budget utils must compute spent_cents for a category+month and warning percentage."
+  },
+  {
+    "id": "task-7",
+    "title": "Build budget summary and charts API routes",
+    "description": "Implement GET /api/budgets/summary: returns spent vs limit per category for given month, using MonthlyBudgetSummary Map. GET /api/charts/pie: returns expense totals by category for month, excludes zero-spend categories. GET /api/charts/bar: returns trailing 6 months of expense totals by category. All routes require authentication and user isolation.",
+    "files": [
+      "src/app/api/budgets/summary/route.ts",
+      "src/app/api/charts/pie/route.ts",
+      "src/app/api/charts/bar/route.ts"
+    ],
+    "dependencies": [
+      "task-1",
+      "task-2",
+      "task-6"
+    ],
+    "priority": 3,
+    "risk": "low",
+    "notes": "Budget summary must default to current month if year_month omitted. Bar chart must return data for exactly N months in ascending order. Pie chart must only include expense categories with amount_cents > 0."
+  },
+  {
+    "id": "task-8",
+    "title": "Build root layout, global CSS, and homepage",
+    "description": "Create src/app/layout.tsx with basic HTML structure, session provider pattern, and NavBar component. Create src/app/globals.css with Tailwind directives and base styles. Build src/app/page.tsx as homepage with login/dashboard redirect logic.",
+    "files": [
+      "src/app/layout.tsx",
+      "src/app/globals.css",
+      "src/app/page.tsx"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 1,
+    "risk": "low",
+    "notes": "Layout must include a NavBar and handle session state. Homepage should redirect to dashboard if authenticated, else show marketing. Use Tailwind's @apply for custom styles."
+  },
+  {
+    "id": "task-9",
+    "title": "Build login and registration pages",
+    "description": "Create src/app/login/page.tsx and src/app/register/page.tsx with forms for email and password. Forms must submit to respective API routes, handle errors (401, 400), and redirect to dashboard on success. Include client-side validation.",
+    "files": [
+      "src/app/login/page.tsx",
+      "src/app/register/page.tsx"
+    ],
+    "dependencies": [
+      "task-3",
+      "task-8"
+    ],
+    "priority": 2,
+    "risk": "low",
+    "notes": "Forms must show inline validation errors. On success, redirect using router.push. Handle network errors gracefully."
+  },
+  {
+    "id": "task-10",
+    "title": "Build dashboard layout, NavBar, and transaction form component",
+    "description": "Create src/app/dashboard/layout.tsx with dashboard-specific layout. Build NavBar component with navigation links and logout button. Build TransactionForm component with fields for amount, date, category, type, notes, and real-time budget warning display.",
+    "files": [
+      "src/app/dashboard/layout.tsx",
+      "src/components/NavBar.tsx",
+      "src/components/TransactionForm.tsx"
+    ],
+    "dependencies": [
+      "task-6",
+      "task-8"
+    ],
+    "priority": 3,
+    "risk": "medium",
+    "notes": "TransactionForm must fetch categories for dropdown, compute budget warning on amount/category change, and show inline warning. Form must submit via fetch and trigger re-fetch of dashboard data."
+  },
+  {
+    "id": "task-11",
+    "title": "Build dashboard page with transaction list and summary",
+    "description": "Create src/app/dashboard/page.tsx as a client component that fetches transactions and budget summary. Display recent transactions list with delete buttons. Include 'Add Transaction' button that opens TransactionForm. After mutations, re-fetch data without full page reload.",
+    "files": [
+      "src/app/dashboard/page.tsx"
+    ],
+    "dependencies": [
+      "task-6",
+      "task-7",
+      "task-10"
+    ],
+    "priority": 3,
+    "risk": "medium",
+    "notes": "Dashboard must use useState/useEffect for data fetching. Implement delete transaction with confirmation. Ensure budget summary updates after transaction mutations."
+  },
+  {
+    "id": "task-12",
+    "title": "Build budget progress page with MonthPicker and progress bars",
+    "description": "Create src/app/budget/page.tsx to display budget summary for selected month. Build MonthPicker component for month selection. Build BudgetProgressBar component to visualize spent vs limit with color coding for over-limit states.",
+    "files": [
+      "src/app/budget/page.tsx",
+      "src/components/MonthPicker.tsx",
+      "src/components/BudgetProgressBar.tsx"
+    ],
+    "dependencies": [
+      "task-7",
+      "task-10"
+    ],
+    "priority": 4,
+    "risk": "low",
+    "notes": "Budget page must fetch summary data when month changes. Progress bar must cap at 100% visually but show over-limit with distinct color. Include 'No limit set' for categories without limit_cents."
+  },
+  {
+    "id": "task-13",
+    "title": "Build charts page with interactive Recharts components",
+    "description": "Create src/app/charts/page.tsx with MonthPicker for pie chart and trailing months selector for bar chart. Build PieChart component with Recharts, enabling drill-down on slice click. Build BarChart component with Recharts for stacked/grouped monthly totals.",
+    "files": [
+      "src/app/charts/page.tsx",
+      "src/components/PieChart.tsx",
+      "src/components/BarChart.tsx"
+    ],
+    "dependencies": [
+      "task-7",
+      "task-12"
+    ],
+    "priority": 4,
+    "risk": "medium",
+    "notes": "Pie chart must exclude zero-spend categories. Bar chart must show 6 months by default. Clicking a pie slice should filter transaction list (drill-down). Ensure charts re-render on month change without full reload."
+  },
+  {
+    "id": "task-14",
+    "title": "Build categories management page",
+    "description": "Create src/app/categories/page.tsx to list user's categories with edit/delete buttons. Integrate CategoryForm for creating and editing categories. Handle delete with reassign flow (show modal if transactions exist).",
+    "files": [
+      "src/app/categories/page.tsx"
+    ],
+    "dependencies": [
+      "task-4",
+      "task-5",
+      "task-10"
+    ],
+    "priority": 3,
+    "risk": "low",
+    "notes": "Page must fetch categories. Delete button must check transaction count and show reassign modal if needed. Edit button should open CategoryForm in edit mode."
+  },
+  {
+    "id": "task-15",
+    "title": "Integration, error handling, and final polish",
+    "description": "Ensure all pages and API routes are wired correctly. Add loading states, error boundaries, and proper redirects for unauthorized access. Test critical user flows: register, login, add transaction, view budget, view charts, manage categories.",
+    "files": [],
+    "dependencies": [
+      "task-3",
+      "task-4",
+      "task-5",
+      "task-6",
+      "task-7",
+      "task-9",
+      "task-11",
+      "task-12",
+      "task-13",
+      "task-14"
+    ],
+    "priority": 5,
+    "risk": "high",
+    "notes": "Test data isolation: ensure User A cannot access User B's data via API. Verify budget warning triggers at 90%. Check that MonthlyBudgetSummary updates correctly on all transaction mutations. Ensure charts are responsive."
+  }
+]

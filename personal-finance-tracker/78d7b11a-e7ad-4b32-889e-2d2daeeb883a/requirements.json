@@ -1,0 +1,76 @@
+{
+  "projectName": "personal-finance-tracker",
+  "description": "A personal finance management app that allows users to log income and expenses against predefined or custom budget categories, visualize spending patterns through charts, and track progress toward budget limits over time. It provides value by surfacing actionable insights into spending habits that raw bank statements cannot easily convey.",
+  "features": [
+    "Manual transaction entry with amount, date, category, and optional notes",
+    "Custom budget categories with monthly spending limits",
+    "Recurring transaction support (subscriptions, salary, rent)",
+    "Interactive charts: pie chart (spending by category), bar chart (monthly comparison), line chart (spending over time)",
+    "Budget progress indicators showing spent vs. remaining per category",
+    "CSV import from bank statements",
+    "Multi-currency support with exchange rate lookup",
+    "Savings goals with progress tracking",
+    "Monthly and annual financial summary reports",
+    "Alerts/notifications when approaching or exceeding budget limits",
+    "Search and filter transactions by date range, category, or amount",
+    "Split transactions across multiple categories"
+  ],
+  "mvpFeatures": [
+    "User authentication and isolated personal data per account",
+    "Manual transaction entry (amount, date, category, type: income/expense, notes)",
+    "Default budget categories with ability to create custom ones and set monthly limits",
+    "Budget progress view: spent vs. limit per category for current month",
+    "Spending breakdown pie chart and monthly bar chart by category"
+  ],
+  "entities": [
+    "User",
+    "Category",
+    "Budget",
+    "Transaction",
+    "RecurringTransaction",
+    "SavingsGoal",
+    "TransactionSplit",
+    "CategoryType (enum: INCOME, EXPENSE, TRANSFER)",
+    "TransactionStatus (enum: CLEARED, PENDING, RECURRING)"
+  ],
+  "entityRelationships": [
+    "User 1:N Category",
+    "User 1:N Transaction",
+    "User 1:N Budget",
+    "User 1:N SavingsGoal",
+    "Category 1:N Transaction",
+    "Category 1:N Budget",
+    "Budget is scoped to a User + Category + month/year period (composite key)",
+    "Transaction 1:N TransactionSplit",
+    "TransactionSplit N:1 Category",
+    "RecurringTransaction 1:N Transaction (generated instances)",
+    "User 1:N RecurringTransaction"
+  ],
+  "userFlows": [
+    "User signs up → verifies email → lands on empty dashboard → prompted to set up first budget category with limit → redirected to transaction entry",
+    "User adds transaction → selects category → amount triggers budget limit check → if over 90% of limit, inline warning shown → transaction saved and chart updates in real time",
+    "User creates custom category → assigns it a type (income/expense) and monthly limit → category appears in budget progress view and chart legend",
+    "User attempts to delete a category that has existing transactions → warned that X transactions are linked → prompted to reassign transactions to another category or cancel deletion",
+    "User views dashboard → selects month picker → all charts and budget progress bars re-render for selected month → user can drill into a category to see individual transactions",
+    "User sets up recurring transaction → defines amount, frequency, start date → system auto-generates transaction entries → user can edit or skip individual instances without affecting the series"
+  ],
+  "constraints": [
+    "Dashboard charts must render within 500ms for up to 1,000 transactions per user",
+    "Budget limit warnings must appear inline during transaction entry without a page reload",
+    "All monetary values stored as integers in cents to avoid floating-point precision errors",
+    "Transaction entry must be completable in under 4 clicks/taps from the dashboard",
+    "Data must be user-isolated — no transaction or budget data accessible across accounts",
+    "Date handling must be timezone-aware to correctly assign transactions to the right month"
+  ],
+  "risks": [
+    "Monthly budget aggregation queries across large transaction sets can become slow — requires indexed queries on (user_id, category_id, date) and possibly pre-aggregated monthly summary tables",
+    "Recurring transaction generation strategy is architecturally ambiguous: eager generation (pre-create future transactions) vs. lazy generation (compute on-the-fly) each have trade-offs for editing and storage",
+    "Split transactions complicate category-level budget rollups — summing category spend must account for partial amounts in TransactionSplit rather than the full Transaction amount",
+    "CSV import from banks has no standard format — mapping columns to internal fields requires a flexible, user-guided mapping step that adds significant UI/UX complexity"
+  ],
+  "openQuestions": [
+    "Is this single-user per account or should multiple household members share one account with shared budgets? This changes the User/Budget ownership model significantly.",
+    "Should budgets roll over unused amounts month to month, or reset to zero each month? Rollover logic requires tracking carry-forward balances per category per period.",
+    "Will the app connect to bank APIs (e.g., Plaid) for automatic transaction sync, or remain fully manual? Automatic sync introduces deduplication logic and OAuth complexity."
+  ]
+}

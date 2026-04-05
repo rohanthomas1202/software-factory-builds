@@ -1,0 +1,17 @@
+{
+  "buildId": "78d7b11a-e7ad-4b32-889e-2d2daeeb883a",
+  "prompt": "Create a personal finance tracker with budget categories and charts",
+  "projectName": "personal-finance-tracker",
+  "runNumber": 2,
+  "status": "partial",
+  "createdAt": 1775401111226,
+  "completedAt": 1775405405247,
+  "durationMs": 4294021,
+  "repoUrl": "https://github.com/rohanthomas1202/software-factory-builds/tree/main/personal-finance-tracker_3ff19t32z",
+  "reviewIteration": 3,
+  "totalUsage": {
+    "inputTokens": 161878,
+    "outputTokens": 210809,
+    "cost": 0.71185602
+  }
+}
