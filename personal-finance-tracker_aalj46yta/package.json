@@ -1,0 +1,38 @@
+{
+  "name": "personal-finance-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "seed": "tsx src/lib/seed.ts"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.3.0",
+    "bcryptjs": "^3.0.2",
+    "cookie": "^1.0.2",
+    "next": "16.2.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^2.15.0",
+    "uuid": "^11.0.6"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
+    "@types/bcryptjs": "^3.0.4",
+    "@types/cookie": "^1.0.4",
+    "@types/node": "^22.10.6",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "@types/uuid": "^10.0.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "16.2.4",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.5.7",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  }
+}
