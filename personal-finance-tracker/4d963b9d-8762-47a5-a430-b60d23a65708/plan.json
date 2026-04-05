@@ -1,0 +1,208 @@
+[
+  {
+    "id": "task-1",
+    "title": "Set up project foundation: config, types, and store",
+    "description": "Create package.json, TypeScript config, Tailwind config, core types (src/lib/types.ts), and the in-memory data store (src/lib/store.ts). The store must export typed Maps for each entity and a seed function. Implement seed.ts to populate two demo users with categories and transactions as per seedData specification.",
+    "files": [
+      "package.json",
+      "tsconfig.json",
+      "tailwind.config.ts",
+      "src/lib/types.ts",
+      "src/lib/store.ts",
+      "src/lib/seed.ts"
+    ],
+    "dependencies": [],
+    "priority": 1,
+    "risk": "low",
+    "notes": "All other tasks depend on types.ts — get the interfaces right here. Store must initialize Maps for users, categories, transactions, and sessions. Seed data must create demo users with specific transactions to trigger warning/over-budget states."
+  },
+  {
+    "id": "task-2",
+    "title": "Build authentication backend and session management",
+    "description": "Implement src/lib/auth.ts with session Map (token → userId, expiresAt) and helper functions (createSession, validateSession, destroySession). Implement API routes: POST /api/auth/register (creates user, sets HttpOnly cookie), POST /api/auth/login (validates credentials, sets cookie), POST /api/auth/logout (clears cookie, removes session). Use crypto.randomUUID for tokens.",
+    "files": [
+      "src/lib/auth.ts",
+      "src/app/api/auth/register/route.ts",
+      "src/app/api/auth/login/route.ts",
+      "src/app/api/auth/logout/route.ts"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 2,
+    "risk": "medium",
+    "notes": "Passwords stored as plaintext per constraint — add clear comment about upgrade path. Session expiration must be enforced (24 hours). All endpoints return correct HTTP status codes (201, 400, 401). Cookie must be HttpOnly, SameSite=Lax."
+  },
+  {
+    "id": "task-3",
+    "title": "Build validation utilities and category API routes",
+    "description": "Create src/lib/validation.ts with parseCents(input) function that coerces decimal strings to integer cents using round-half-up. Implement category CRUD: GET /api/categories (list), POST /api/categories (create with unique name per user), PATCH /api/categories/[id] (update), DELETE /api/categories/[id] (returns 409 with transaction count if needed). Integrate validation for monthly_limit_cents integer.",
+    "files": [
+      "src/lib/validation.ts",
+      "src/app/api/categories/route.ts",
+      "src/app/api/categories/[id]/route.ts"
+    ],
+    "dependencies": [
+      "task-1",
+      "task-2"
+    ],
+    "priority": 3,
+    "risk": "medium",
+    "notes": "DELETE endpoint must check transaction count and return 409 { error: 'TRANSACTIONS_EXIST', count: number }. PATCH must enforce unique name per user. All endpoints must validate user ownership via session."
+  },
+  {
+    "id": "task-4",
+    "title": "Build transaction API routes with filtering",
+    "description": "Implement transaction CRUD: GET /api/transactions with query params (category_id, start_date, end_date, type, page) and pagination (50 per page). POST /api/transactions (creates transaction, validates EXPENSE requires category_id). PATCH /api/transactions/[id] (updates, enforces EXPENSE category rule). DELETE /api/transactions/[id]. Use validation.ts for amount_cents parsing.",
+    "files": [
+      "src/app/api/transactions/route.ts",
+      "src/app/api/transactions/[id]/route.ts"
+    ],
+    "dependencies": [
+      "task-1",
+      "task-2",
+      "task-3"
+    ],
+    "priority": 4,
+    "risk": "medium",
+    "notes": "GET endpoint must parse query params, filter transactions by user and criteria, and return pagination metadata (total, page, per_page, total_pages). POST must validate transaction_date format and store as UTC. PATCH must handle partial updates correctly."
+  },
+  {
+    "id": "task-5",
+    "title": "Implement dashboard aggregates and summary API",
+    "description": "Create src/lib/aggregates.ts with pure functions to compute: total income/expenses/net for a month, per-category spent_cents and percentage, pie chart data (expenses only). Use user's timezone for monthly bucketing. Implement GET /api/dashboard/summary endpoint that returns summary object, categories array with spent/limit/pct, and pie_data array.",
+    "files": [
+      "src/lib/aggregates.ts",
+      "src/app/api/dashboard/summary/route.ts"
+    ],
+    "dependencies": [
+      "task-1",
+      "task-2",
+      "task-3",
+      "task-4"
+    ],
+    "priority": 5,
+    "risk": "high",
+    "notes": "This is performance-critical. Aggregates must iterate over transactions Map efficiently. Use Intl.DateTimeFormat with user's timezone to map UTC dates to calendar months. Ensure pie_data only includes EXPENSE transactions. API defaults to current month in user's timezone."
+  },
+  {
+    "id": "task-6",
+    "title": "Build core UI components: ProgressBar, PieChart, SummaryCards, NavBar",
+    "description": "Create reusable components: ProgressBar (shows spent/limit, changes color at 90%/100%), PieChart (SVG-based, draws arcs, accepts onClick handler per segment), SummaryCards (displays total income, expenses, net balance), NavBar (shows user email and logout link). Use Tailwind for styling.",
+    "files": [
+      "src/components/ProgressBar.tsx",
+      "src/components/PieChart.tsx",
+      "src/components/SummaryCards.tsx",
+      "src/components/NavBar.tsx"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 6,
+    "risk": "high",
+    "notes": "PieChart must be hand-rolled SVG using trigonometry for arcs. Each segment must be clickable (pass category_id). ProgressBar must accept spent_cents and limit_cents props and compute percentage. NavBar must read user from session (via server component)."
+  },
+  {
+    "id": "task-7",
+    "title": "Build authentication UI pages (login, register)",
+    "description": "Create login and registration pages with forms for email, password, and timezone (registration only). On submit, call respective API endpoints, handle errors, and redirect to /dashboard on success. Implement form validation (required fields, email format). Style with Tailwind.",
+    "files": [
+      "src/app/login/page.tsx",
+      "src/app/register/page.tsx"
+    ],
+    "dependencies": [
+      "task-2",
+      "task-6"
+    ],
+    "priority": 7,
+    "risk": "low",
+    "notes": "Registration form must include timezone dropdown (preset list of IANA timezones). Login/register must set session cookie via API; redirect using Next.js router. Display API errors (e.g., 'Email already taken') inline."
+  },
+  {
+    "id": "task-8",
+    "title": "Build main layout and root page",
+    "description": "Create src/app/layout.tsx with NavBar and session integration (read cookie via server component, pass user to NavBar). Create src/app/page.tsx (homepage) that redirects to /dashboard if logged in, otherwise shows hero and links to login/register.",
+    "files": [
+      "src/app/layout.tsx",
+      "src/app/page.tsx"
+    ],
+    "dependencies": [
+      "task-2",
+      "task-6"
+    ],
+    "priority": 8,
+    "risk": "low",
+    "notes": "Layout must be a server component that reads the session token from cookies, validates via auth.ts, and passes user prop to NavBar client component. Root page must check auth and redirect appropriately."
+  },
+  {
+    "id": "task-9",
+    "title": "Build category management UI",
+    "description": "Create categories page listing user's categories with name, limit, color. Include form to create new category (name, limit, color picker). Implement edit (inline or modal) and delete with modal for reassignment (DeleteCategoryModal). Handle delete with transactions by showing count and reassign dropdown.",
+    "files": [
+      "src/app/categories/page.tsx",
+      "src/components/CategoryForm.tsx",
+      "src/components/DeleteCategoryModal.tsx"
+    ],
+    "dependencies": [
+      "task-3",
+      "task-6",
+      "task-8"
+    ],
+    "priority": 9,
+    "risk": "medium",
+    "notes": "DeleteCategoryModal must appear when deleting a category with transactions, show transaction count, and offer dropdown to select replacement category. If only one category exists, disable reassign and show message. Modal must call DELETE with ?reassign_to query param if applicable."
+  },
+  {
+    "id": "task-10",
+    "title": "Build transaction list UI with filtering and inline edit",
+    "description": "Create transactions page with: filter controls (category multi-select, date range, type), paginated list (TransactionRow per item), inline edit for note and category (amount/date require full edit). Filters must update URL query params. Implement TransactionRow with edit mode.",
+    "files": [
+      "src/app/transactions/page.tsx",
+      "src/components/TransactionRow.tsx"
+    ],
+    "dependencies": [
+      "task-4",
+      "task-6",
+      "task-8",
+      "task-9"
+    ],
+    "priority": 10,
+    "risk": "medium",
+    "notes": "Use useSearchParams for filter state so URL is shareable. TransactionRow must switch to edit mode on click, call PATCH API on save. Date range filter must use date inputs. Pagination controls must reflect API metadata."
+  },
+  {
+    "id": "task-11",
+    "title": "Build dashboard page with integrated charts and drill-down",
+    "description": "Create dashboard page that fetches data from /api/dashboard/summary and displays: SummaryCards, list of category ProgressBars, PieChart. Clicking a pie segment navigates to /transactions filtered by that category and current month. Show warning/error states on progress bars.",
+    "files": [
+      "src/app/dashboard/page.tsx"
+    ],
+    "dependencies": [
+      "task-5",
+      "task-6",
+      "task-8",
+      "task-10"
+    ],
+    "priority": 11,
+    "risk": "medium",
+    "notes": "Page must load data on the client (use SWR or fetch). PieChart onClick must navigate with next/router: `/transactions?category_id=${categoryId}&month=${currentMonth}`. Ensure progress bars show correct colors based on pct >= 90 or > 100."
+  },
+  {
+    "id": "task-12",
+    "title": "Build transaction form component and final integration",
+    "description": "Create TransactionForm component for adding/editing transactions (type, amount, date, category, note). Form must validate EXPENSE requires category, amount input can be decimal but is coerced to cents via API. Integrate form into transactions page for creation and full edit. Final polish: seed data check, error handling.",
+    "files": [
+      "src/components/TransactionForm.tsx"
+    ],
+    "dependencies": [
+      "task-4",
+      "task-6",
+      "task-8",
+      "task-9",
+      "task-10"
+    ],
+    "priority": 12,
+    "risk": "low",
+    "notes": "Form must be usable for both create and edit modes. Amount input should allow decimal but display warning that it's stored as cents. Category dropdown must only show user's categories. Ensure all API calls handle errors gracefully with user feedback."
+  }
+]

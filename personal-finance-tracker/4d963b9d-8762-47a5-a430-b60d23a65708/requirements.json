@@ -1,0 +1,70 @@
+{
+  "projectName": "personal-finance-tracker",
+  "description": "A personal finance management app that lets users track income and expenses against user-defined budget categories, visualized through interactive charts. It provides actionable spending insights by comparing actual transactions against monthly budget targets, helping users identify overspending patterns over time.",
+  "features": [
+    "Create and manage custom budget categories with monthly spending limits",
+    "Manual transaction entry with amount, date, category, and notes",
+    "CSV/bank statement import for bulk transaction entry",
+    "Dashboard with spending-vs-budget bar charts per category",
+    "Monthly trend line charts showing spending over 3/6/12 months",
+    "Pie chart breakdown of spending by category for any date range",
+    "Budget rollover: unspent amounts carry to next month",
+    "Recurring transaction templates (rent, subscriptions)",
+    "Transaction search and filter by date range, category, amount",
+    "Export transactions to CSV",
+    "Monthly summary email/notification when approaching budget limits",
+    "Multi-currency support with manual exchange rates",
+    "Savings goals tracker linked to specific categories"
+  ],
+  "mvpFeatures": [
+    "Create budget categories with monthly spending limits",
+    "Manual transaction entry (amount, date, category, note, income vs expense)",
+    "Dashboard with per-category spending-vs-budget progress bars and a pie chart",
+    "Monthly transaction list with filter by category and date range",
+    "Running monthly totals: total income, total expenses, net balance"
+  ],
+  "entities": [
+    "User",
+    "BudgetCategory",
+    "Transaction",
+    "TransactionType (enum: INCOME, EXPENSE)",
+    "RecurringTemplate",
+    "MonthlyBudgetSnapshot",
+    "SavingsGoal"
+  ],
+  "entityRelationships": [
+    "User 1:N BudgetCategory",
+    "User 1:N Transaction",
+    "BudgetCategory 1:N Transaction",
+    "BudgetCategory 1:N MonthlyBudgetSnapshot",
+    "RecurringTemplate N:1 BudgetCategory",
+    "RecurringTemplate 1:N Transaction",
+    "SavingsGoal N:1 BudgetCategory"
+  ],
+  "userFlows": [
+    "User registers → sets up first budget categories with limits → adds first transaction → lands on dashboard showing budget utilization",
+    "User adds transaction → selects category → category progress bar updates immediately → if over 90% of budget, inline warning is shown",
+    "User imports CSV → app parses rows → presents preview with auto-suggested category matches → user corrects mismatches → confirms import → transactions saved",
+    "User tries to delete a budget category that has existing transactions → warned that N transactions exist → prompted to reassign to another category or delete all associated transactions → confirms → category removed",
+    "User views monthly chart → clicks a bar segment → drills down into transaction list filtered to that category and month → edits a transaction inline → chart updates reactively"
+  ],
+  "constraints": [
+    "Dashboard must load with all charts rendered in under 2 seconds for up to 5 years of transaction history (~3,600 transactions)",
+    "Chart data aggregation queries must complete under 300ms p95",
+    "Transaction entry completable in under 4 user interactions (clicks/taps)",
+    "CSV import must handle files up to 10,000 rows without timeout",
+    "All monetary values stored as integers (cents) to avoid floating-point rounding errors",
+    "Date handling must be timezone-aware; budget periods based on user's local timezone"
+  ],
+  "risks": [
+    "Chart aggregation performance degrades as transaction volume grows — pre-computing MonthlyBudgetSnapshots at write time vs. querying raw transactions at read time is an architectural decision needed upfront",
+    "CSV import format varies wildly between banks — building a flexible parser vs. supporting named bank presets are two very different scopes; a naive parser will fail real-world files",
+    "Budget period definition (calendar month vs. rolling 30 days vs. custom pay-period) affects nearly every query and display logic — defaulting to calendar month may not match user payroll cycles",
+    "Floating-point currency arithmetic is a silent data corruption risk — integer (cents) storage must be enforced at the ORM/validation layer, not just convention"
+  ],
+  "openQuestions": [
+    "Is this single-user only or will households need shared access to the same budget? — multi-user sharing requires a Workspace/Household entity layer and permission model",
+    "Should budget limits reset every calendar month automatically, or should users define custom budget periods (e.g., biweekly paychecks)? — this changes the MonthlyBudgetSnapshot schema and all aggregation logic",
+    "Will bank/account syncing (Plaid, Open Banking) be in scope eventually? — if yes, the Transaction entity needs an external_id and sync_source field from day one to prevent duplicate imports later"
+  ]
+}

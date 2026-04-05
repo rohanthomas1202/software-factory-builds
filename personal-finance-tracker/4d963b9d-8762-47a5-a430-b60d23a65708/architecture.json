@@ -1,0 +1,72 @@
+{
+  "techStack": {
+    "frontend": "Next.js 16, TypeScript, Tailwind CSS",
+    "backend": "Next.js API Routes (in-memory data store)",
+    "database": "In-memory store (module-level singleton, no external database)",
+    "auth": "Cookie-based sessions via API routes (HttpOnly, SameSite=Lax)",
+    "hosting": "Vercel"
+  },
+  "fileTree": [
+    "src/lib/store.ts",
+    "src/lib/types.ts",
+    "src/lib/auth.ts",
+    "src/lib/aggregates.ts",
+    "src/lib/validation.ts",
+    "src/app/layout.tsx",
+    "src/app/page.tsx",
+    "src/app/login/page.tsx",
+    "src/app/register/page.tsx",
+    "src/app/dashboard/page.tsx",
+    "src/app/transactions/page.tsx",
+    "src/app/categories/page.tsx",
+    "src/app/api/auth/register/route.ts",
+    "src/app/api/auth/login/route.ts",
+    "src/app/api/auth/logout/route.ts",
+    "src/app/api/categories/route.ts",
+    "src/app/api/categories/[id]/route.ts",
+    "src/app/api/transactions/route.ts",
+    "src/app/api/transactions/[id]/route.ts",
+    "src/app/api/dashboard/summary/route.ts",
+    "src/components/NavBar.tsx",
+    "src/components/TransactionForm.tsx",
+    "src/components/CategoryForm.tsx",
+    "src/components/PieChart.tsx",
+    "src/components/ProgressBar.tsx",
+    "src/components/TransactionRow.tsx",
+    "src/components/SummaryCards.tsx",
+    "src/components/DeleteCategoryModal.tsx"
+  ],
+  "apiContracts": [
+    "POST /api/auth/register - { email: string, password: string, timezone: string } → 201 { user: { id, email, timezone, created_at } } + sets HttpOnly session cookie 'sid'; 400 if email taken or fields missing",
+    "POST /api/auth/login - { email: string, password: string } → 200 { user: { id, email, timezone } } + sets HttpOnly session cookie 'sid'; 401 if credentials invalid",
+    "POST /api/auth/logout - (no body) → 200 { ok: true } + clears 'sid' cookie; invalidates token in server-side sessions Map",
+    "GET /api/categories - (no body, auth via cookie) → 200 { categories: [{ id, user_id, name, monthly_limit_cents, color_hex, created_at }] }; 401 if unauthenticated",
+    "POST /api/categories - { name: string, monthly_limit_cents: integer >= 0, color_hex?: string } → 201 { category: { id, user_id, name, monthly_limit_cents, color_hex, created_at } }; 400 if monthly_limit_cents is float or missing; 409 if name already exists for user",
+    "PATCH /api/categories/[id] - { name?: string, monthly_limit_cents?: integer, color_hex?: string } → 200 { category: { id, name, monthly_limit_cents, color_hex } }; 400 on float cents; 404 if not found or not owned by user",
+    "DELETE /api/categories/[id] - (no body) → 200 { ok: true } if no transactions; 409 { error: 'TRANSACTIONS_EXIST', count: number } if transactions reference it; user must reassign via PATCH transactions or pass ?reassign_to=<categoryId> query param to bulk-reassign then delete in one call → 200 { ok: true, reassigned: number }",
+    "GET /api/transactions?category_id=&start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&type=INCOME|EXPENSE&page=1 - → 200 { transactions: [{ id, user_id, category_id, type, amount_cents, transaction_date, note, created_at }], total: number, page: number, per_page: 50, total_pages: number }; 401 if unauthenticated",
+    "POST /api/transactions - { type: 'INCOME'|'EXPENSE', amount_cents: integer > 0 (decimal string coerced server-side), transaction_date: 'YYYY-MM-DD', category_id?: string, note?: string } → 201 { transaction: { id, type, amount_cents, transaction_date, category_id, note, created_at } }; 400 if EXPENSE and no category_id; 400 if amount_cents <= 0 or non-numeric",
+    "PATCH /api/transactions/[id] - { note?: string, category_id?: string, type?: string, amount_cents?: integer, transaction_date?: string } → 200 { transaction: { id, type, amount_cents, transaction_date, category_id, note } }; 400 if setting EXPENSE with no category; 404 if not owned by user",
+    "DELETE /api/transactions/[id] - (no body) → 200 { ok: true }; 404 if not found or not owned by user",
+    "GET /api/dashboard/summary?year=YYYY&month=M - → 200 { summary: { total_income_cents: integer, total_expenses_cents: integer, net_balance_cents: integer, currency: 'USD' }, categories: [{ id, name, color_hex, monthly_limit_cents, spent_cents, pct: number }], pie_data: [{ category_id, name, color_hex, amount_cents }] }; defaults year+month to current calendar month in user's stored timezone; 401 if unauthenticated"
+  ],
+  "designDecisions": [
+    "WHAT: Single store.ts module with Map<string, User|BudgetCategory|Transaction> singletons. WHY: Eliminates all DB setup/migrations for zero-dependency dev. Module is imported once per Node process so Maps persist across requests. UPGRADE PATH: Replace Map lookups with Prisma client calls; types.ts interfaces already match the DB schema columns so swap is mechanical.",
+    "WHAT: Plaintext passwords stored in store.ts with direct string equality comparison on login. WHY: No external crypto libraries are used; passwords are stored and compared as plaintext strings. A comment in store.ts documents the exact replacement lines needed to adopt a hashing approach when external dependencies become permissible. UPGRADE PATH: Introduce a hashing library and replace the equality check with a constant-time comparison.",
+    "WHAT: Cookie-based sessions using a Map<token, userId> in auth.ts instead of JWT. WHY: PRD mentions JWT but the constraint bans external services and jwt libraries. crypto.randomUUID() provides an unforgeable session token stored server-side, which is strictly more revocable than JWT. Sessions expire after 24 hours via stored expiresAt timestamp. UPGRADE PATH: Replace with jose library for signed JWTs when stateless horizontal scaling is needed.",
+    "WHAT: aggregates.ts contains all monthly-total computation (dashboard summary, progress bars, pie data) as pure functions over the transactions Map. WHY: Centralizes the one performance-sensitive path. At 3,600 transactions the Map iteration is O(n) and benchmarks well under 300ms in Node; if it ever breaches, the function signatures are already shaped to be replaced with a pre-computed MonthlyBudgetSnapshot write-through cache. UPGRADE PATH: Add a snapshotStore Map keyed by `${userId}:${year}:${month}` updated on every transaction write/delete.",
+    "WHAT: validation.ts exports a parseCents(input: unknown): number helper that coerces decimal strings ('12.50' → 1250) with round-half-up. WHY: PRD requires coercion at the validation layer, not the client. Centralizing prevents float arithmetic from ever reaching the store. UPGRADE PATH: Replace with Zod .transform() once Zod is added.",
+    "WHAT: PieChart.tsx is a hand-rolled SVG pie chart using only React + math (no chart library). WHY: The constraint bans installable component libraries; recharts/chart.js would require npm install. SVG arcs drawn with trigonometry give full control over click handlers needed for drill-down navigation. UPGRADE PATH: Swap SVG implementation for Recharts PieChart component with identical props interface.",
+    "WHAT: URL query params drive transaction list filtering (?category_id=&start_date=&end_date=&type=&page=). WHY: PRD explicitly requires filter state to be shareable/bookmarkable. Next.js useSearchParams() reads these on the client; the GET /api/transactions route reads the same params server-side for API consumers. UPGRADE PATH: No change needed; query param contract is stable.",
+    "WHAT: Timezone stored on User at registration; all monthly bucketing in aggregates.ts uses the user's timezone via Intl.DateTimeFormat to determine which calendar month a UTC date belongs to. WHY: PRD requires month boundaries computed in user's timezone, not server timezone. UPGRADE PATH: Same logic works with a real DB; no architectural change needed."
+  ],
+  "knownLimitations": [
+    "Data is lost on server restart — all users, categories, and transactions are in-memory Maps. There is no persistence layer. Acceptable for demo; unacceptable for production.",
+    "No horizontal scaling — the in-memory session Map and data Maps live in a single Node process. Deploying multiple instances (e.g., Vercel edge functions with multiple workers) would cause session mismatches and data inconsistency.",
+    "The SVG pie chart has no animation and limited accessibility (no ARIA roles on segments). It covers the click-to-filter requirement but is not production-quality data visualization.",
+    "Timezone handling uses Intl.DateTimeFormat for month bucketing which works in Node 18+ but is not tested against all IANA timezone edge cases (DST transitions at month boundaries may produce off-by-one date assignment for transactions entered near midnight).",
+    "Concurrent writes to the same user's transactions are not protected by any mutex — two simultaneous POST /api/transactions requests could theoretically produce a race on the Map. At MVP scale (50 concurrent users) this is negligible but would require a write queue or DB transactions at scale.",
+    "Passwords are stored as plaintext strings — there is no hashing or salting. This is acceptable only for a demo environment and must never be used in production."
+  ],
+  "seedData": "On server startup, store.ts pre-populates two demo users: (1) demo@example.com / password123, timezone America/New_York; (2) jane@example.com / password123, timezone America/Los_Angeles. Demo user 1 has 5 budget categories: Groceries ($500/mo, green #22c55e), Rent ($1500/mo, blue #3b82f6), Dining Out ($200/mo, orange #f97316), Transportation ($150/mo, purple #a855f7), Entertainment ($100/mo, pink #ec4899). Demo user 1 has 30 transactions spread across the current calendar month: ~20 EXPENSE transactions distributed across all 5 categories (some pushing Groceries to ~92% of limit to trigger amber warning state, Entertainment to ~115% to trigger red), and 4 INCOME transactions (two salary entries of $3000 each). Demo user 2 has 3 categories and 10 transactions so the empty-state paths are also reachable."
+}
