@@ -1,0 +1,225 @@
+[
+  {
+    "id": "task-1",
+    "title": "Set up project structure and configuration",
+    "description": "Create the base Next.js project with TypeScript, Tailwind, and required dependencies",
+    "files": [
+      "package.json",
+      "tsconfig.json",
+      "tailwind.config.ts",
+      "src/app/globals.css",
+      "src/app/layout.tsx",
+      "src/lib/utils.ts"
+    ],
+    "dependencies": [],
+    "priority": 1
+  },
+  {
+    "id": "task-2",
+    "title": "Create core TypeScript types and in-memory data store",
+    "description": "Define all entity types and implement the singleton in-memory store with seeded demo data",
+    "files": [
+      "src/lib/types.ts",
+      "src/lib/store.ts"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 2
+  },
+  {
+    "id": "task-3",
+    "title": "Implement authentication utilities and API routes",
+    "description": "Create auth helper functions and API routes for login, logout, and session management",
+    "files": [
+      "src/lib/auth.ts",
+      "src/app/api/auth/login/route.ts",
+      "src/app/api/auth/logout/route.ts",
+      "src/app/api/auth/me/route.ts",
+      "src/hooks/useAuth.ts"
+    ],
+    "dependencies": [
+      "task-2"
+    ],
+    "priority": 3
+  },
+  {
+    "id": "task-4",
+    "title": "Build UI components library",
+    "description": "Create reusable UI components: Avatar, Badge, Button, Modal, and NotificationPanel",
+    "files": [
+      "src/components/UI/Avatar.tsx",
+      "src/components/UI/Badge.tsx",
+      "src/components/UI/Button.tsx",
+      "src/components/UI/Modal.tsx",
+      "src/components/UI/NotificationPanel.tsx"
+    ],
+    "dependencies": [
+      "task-1",
+      "task-2"
+    ],
+    "priority": 4
+  },
+  {
+    "id": "task-5",
+    "title": "Create layout components",
+    "description": "Build Navbar and Sidebar components for consistent layout across pages",
+    "files": [
+      "src/components/Layout/Navbar.tsx",
+      "src/components/Layout/Sidebar.tsx"
+    ],
+    "dependencies": [
+      "task-3",
+      "task-4"
+    ],
+    "priority": 5
+  },
+  {
+    "id": "task-6",
+    "title": "Implement login page and home page",
+    "description": "Create the login page and main landing page with authentication flow",
+    "files": [
+      "src/app/login/page.tsx",
+      "src/app/page.tsx"
+    ],
+    "dependencies": [
+      "task-3",
+      "task-4",
+      "task-5"
+    ],
+    "priority": 6
+  },
+  {
+    "id": "task-7",
+    "title": "Build project management API routes",
+    "description": "Implement CRUD operations for projects and project members",
+    "files": [
+      "src/app/api/projects/route.ts",
+      "src/app/api/projects/[projectId]/route.ts"
+    ],
+    "dependencies": [
+      "task-2",
+      "task-3"
+    ],
+    "priority": 7
+  },
+  {
+    "id": "task-8",
+    "title": "Create dashboard page and components",
+    "description": "Build the main dashboard with project listing and creation functionality",
+    "files": [
+      "src/app/dashboard/page.tsx",
+      "src/components/Dashboard/ProjectCard.tsx",
+      "src/components/Dashboard/CreateProjectModal.tsx"
+    ],
+    "dependencies": [
+      "task-4",
+      "task-5",
+      "task-7"
+    ],
+    "priority": 8
+  },
+  {
+    "id": "task-9",
+    "title": "Implement board and column API routes",
+    "description": "Create API endpoints for board operations and column management",
+    "files": [
+      "src/app/api/boards/[boardId]/route.ts",
+      "src/app/api/boards/[boardId]/columns/route.ts",
+      "src/app/api/columns/[columnId]/route.ts"
+    ],
+    "dependencies": [
+      "task-2",
+      "task-3"
+    ],
+    "priority": 9
+  },
+  {
+    "id": "task-10",
+    "title": "Build task management API routes",
+    "description": "Implement CRUD operations for tasks, task movement, and comments",
+    "files": [
+      "src/app/api/tasks/route.ts",
+      "src/app/api/tasks/[taskId]/route.ts",
+      "src/app/api/tasks/[taskId]/comments/route.ts",
+      "src/app/api/tasks/[taskId]/move/route.ts"
+    ],
+    "dependencies": [
+      "task-2",
+      "task-3"
+    ],
+    "priority": 10
+  },
+  {
+    "id": "task-11",
+    "title": "Create notifications API route",
+    "description": "Implement notifications retrieval and marking as read functionality",
+    "files": [
+      "src/app/api/notifications/route.ts",
+      "src/hooks/useNotifications.ts"
+    ],
+    "dependencies": [
+      "task-2",
+      "task-3"
+    ],
+    "priority": 11
+  },
+  {
+    "id": "task-12",
+    "title": "Build drag-and-drop hook",
+    "description": "Create custom useDragAndDrop hook for native HTML5 drag events",
+    "files": [
+      "src/hooks/useDragAndDrop.ts"
+    ],
+    "dependencies": [
+      "task-2"
+    ],
+    "priority": 12
+  },
+  {
+    "id": "task-13",
+    "title": "Create board components",
+    "description": "Build Kanban board, column, and task card components",
+    "files": [
+      "src/components/Board/KanbanBoard.tsx",
+      "src/components/Board/KanbanColumn.tsx",
+      "src/components/Board/TaskCard.tsx"
+    ],
+    "dependencies": [
+      "task-4",
+      "task-12"
+    ],
+    "priority": 13
+  },
+  {
+    "id": "task-14",
+    "title": "Build board modal components",
+    "description": "Create modals for adding tasks, viewing task details, and adding columns",
+    "files": [
+      "src/components/Board/AddTaskModal.tsx",
+      "src/components/Board/TaskDetailModal.tsx",
+      "src/components/Board/AddColumnModal.tsx"
+    ],
+    "dependencies": [
+      "task-4",
+      "task-13"
+    ],
+    "priority": 14
+  },
+  {
+    "id": "task-15",
+    "title": "Implement board page with real-time updates",
+    "description": "Create the main board page with polling for real-time collaboration simulation",
+    "files": [
+      "src/app/board/[boardId]/page.tsx"
+    ],
+    "dependencies": [
+      "task-9",
+      "task-10",
+      "task-11",
+      "task-13",
+      "task-14"
+    ],
+    "priority": 15
+  }
+]

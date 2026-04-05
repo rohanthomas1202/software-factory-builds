@@ -1,0 +1,46 @@
+{
+  "projectName": "kanban-team-collaboration-tool",
+  "description": "A project management application featuring visual kanban boards for task tracking and real-time team collaboration capabilities. The tool enables teams to organize work into customizable columns, assign tasks, and communicate seamlessly within the context of their projects.",
+  "features": [
+    "Drag-and-drop kanban board interface",
+    "Real-time team collaboration and notifications",
+    "Task assignment and due dates",
+    "File attachments and comments on tasks",
+    "User roles and permissions",
+    "Project progress tracking and analytics",
+    "Customizable board columns and workflows",
+    "Search and filter functionality",
+    "Mobile-responsive design",
+    "Integration with calendar and email notifications"
+  ],
+  "entities": [
+    "User",
+    "Project",
+    "Task",
+    "Board",
+    "Column",
+    "Comment",
+    "Attachment",
+    "Team",
+    "Notification",
+    "Invitation"
+  ],
+  "userFlows": [
+    "User signs up and creates a profile",
+    "User creates a new project and board",
+    "User invites team members to collaborate",
+    "User adds tasks to board columns",
+    "User assigns tasks to team members",
+    "User comments on tasks and attaches files",
+    "User moves tasks between columns to update status",
+    "User receives real-time notifications about task updates",
+    "User views project analytics and progress reports"
+  ],
+  "constraints": [
+    "Must be responsive across all device sizes",
+    "Real-time updates must be performant with minimal latency",
+    "Data must be securely stored with user authentication",
+    "Must support at least 50 concurrent users per project",
+    "Must comply with GDPR and data privacy regulations"
+  ]
+}
