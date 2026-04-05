@@ -1,0 +1,218 @@
+[
+  {
+    "id": "task-1",
+    "title": "Set up project foundation: config, types, and store",
+    "description": "Create package.json, TypeScript config, Tailwind config, core types (src/lib/types.ts), and the in-memory data store (src/lib/store.ts). The store must export typed Maps for each entity and a seed function.",
+    "files": [
+      "package.json",
+      "tsconfig.json",
+      "tailwind.config.ts",
+      "src/lib/types.ts",
+      "src/lib/store.ts",
+      "src/lib/seed.ts"
+    ],
+    "dependencies": [],
+    "priority": 1,
+    "risk": "low",
+    "notes": "All other tasks depend on types.ts — get the interfaces right here. Store.ts must export Maps: users, sessions, clients, invoices, lineItems, payments, taxRates, statusHistory, emailLogs, plans, subscriptions. Seed.ts should insert demo data (demo@example.com user, plans, 3 clients, tax rates, 5 invoices)."
+  },
+  {
+    "id": "task-2",
+    "title": "Implement authentication system with cookie-based sessions",
+    "description": "Create auth.ts with functions for user registration, login (password plaintext), logout, session validation. Implement API routes for register, login, logout, and me. Build login and register pages with forms.",
+    "files": [
+      "src/lib/auth.ts",
+      "src/app/api/auth/register/route.ts",
+      "src/app/api/auth/login/route.ts",
+      "src/app/api/auth/logout/route.ts",
+      "src/app/api/auth/me/route.ts",
+      "src/app/login/page.tsx",
+      "src/app/register/page.tsx"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 2,
+    "risk": "medium",
+    "notes": "Passwords stored as plaintext per PRD. Sessions: Map<token, userId>. HttpOnly cookie named 'sid'. Login page redirects to dashboard on success. Register creates a user with 'pro' subscription for demo."
+  },
+  {
+    "id": "task-3",
+    "title": "Build client management (API + UI)",
+    "description": "Implement GET/POST/PATCH/DELETE /api/clients endpoints with auth and ownership checks. Build clients list page with table, add client form inline, and delete/archive logic with guard.",
+    "files": [
+      "src/app/api/clients/route.ts",
+      "src/app/api/clients/[id]/route.ts",
+      "src/app/clients/page.tsx",
+      "src/components/ClientForm.tsx"
+    ],
+    "dependencies": [
+      "task-1",
+      "task-2"
+    ],
+    "priority": 3,
+    "risk": "medium",
+    "notes": "DELETE must check for active (non-paid) invoices and return 409 with invoice_ids if present. force_archive=true soft-deletes. ClientForm used in invoice creation later. UI must show archived state."
+  },
+  {
+    "id": "task-4",
+    "title": "Implement tax rates API and core calculation utilities",
+    "description": "Build tax rates CRUD endpoints with default rate handling. Create calculations.ts for server-side financial math (subtotal, discount, tax, total). Implement invoice-number.ts for per-user auto-increment.",
+    "files": [
+      "src/lib/calculations.ts",
+      "src/lib/invoice-number.ts",
+      "src/app/api/tax-rates/route.ts",
+      "src/app/api/tax-rates/[id]/route.ts"
+    ],
+    "dependencies": [
+      "task-1"
+    ],
+    "priority": 4,
+    "risk": "low",
+    "notes": "Calculations must use integer cents only. Discount can be flat (cents) or percent (basis points). Invoice number format: INV-0001 per user. DELETE tax rate must check for unpaid invoice references."
+  },
+  {
+    "id": "task-5",
+    "title": "Build invoice CRUD API (draft creation and editing)",
+    "description": "Implement POST /api/invoices (create draft), GET /api/invoices (list with filtering/pagination), GET/PATCH /api/invoices/[id] endpoints. Include auth, ownership, and status guards (409 if paid).",
+    "files": [
+      "src/app/api/invoices/route.ts",
+      "src/app/api/invoices/[id]/route.ts"
+    ],
+    "dependencies": [
+      "task-1",
+      "task-2",
+      "task-3",
+      "task-4"
+    ],
+    "priority": 5,
+    "risk": "medium",
+    "notes": "POST must validate at least 1 line item, calculate totals server-side. PATCH must block line item changes if status is sent/viewed/overdue. Filtering by status, client_id, date_range. Pagination with page_size=50."
+  },
+  {
+    "id": "task-6",
+    "title": "Implement invoice send pipeline with simulated PDF and email",
+    "description": "Build POST /api/invoices/[id]/send endpoint that transitions status, generates simulated PDF (sets pdf_url), creates EmailLog entry, and signs token. Create token.ts for HMAC-like signing and pdf.ts for HTML generation.",
+    "files": [
+      "src/lib/token.ts",
+      "src/lib/pdf.ts",
+      "src/app/api/invoices/[id]/send/route.ts"
+    ],
+    "dependencies": [
+      "task-1",
+      "task-4",
+      "task-5"
+    ],
+    "priority": 6,
+    "risk": "high",
+    "notes": "Critical path: simulates async pipeline synchronously. PDF generation returns HTML string; set pdf_url to '/api/invoices/:id/pdf' (not implemented). Token signing uses base64url(invoiceId:userId:secret). EmailLog with fake provider_message_id."
+  },
+  {
+    "id": "task-7",
+    "title": "Build payment tracking and public invoice view",
+    "description": "Implement PATCH /api/invoices/[id]/mark-paid (creates Payment, transitions to paid). Build GET /api/invoices/view/[token] for public access (no auth) that sets status to viewed and returns invoice data.",
+    "files": [
+      "src/app/api/invoices/[id]/mark-paid/route.ts",
+      "src/app/api/invoices/view/[token]/route.ts"
+    ],
+    "dependencies": [
+      "task-1",
+      "task-5",
+      "task-6"
+    ],
+    "priority": 7,
+    "risk": "medium",
+    "notes": "Mark-paid must be idempotent (409 if already paid). Public view validates token, transitions sent→viewed idempotently, creates statusHistory. Return 404 on invalid token (do not reveal existence)."
+  },
+  {
+    "id": "task-8",
+    "title": "Build dashboard API and page with lazy overdue updates",
+    "description": "Implement GET /api/dashboard/summary that calculates outstanding total, paid this month, overdue count. Include lazy overdue status transition (update any sent/viewed invoices past due_date). Build dashboard page with summary cards.",
+    "files": [
+      "src/app/api/dashboard/summary/route.ts",
+      "src/app/dashboard/page.tsx"
+    ],
+    "dependencies": [
+      "task-1",
+      "task-2",
+      "task-5"
+    ],
+    "priority": 8,
+    "risk": "low",
+    "notes": "Dashboard API must trigger overdue updates on each call (no cron). Calculations in user's default currency. UI shows three summary cards. Seed data should produce ~$8,360 outstanding, $1,100 paid, 1 overdue."
+  },
+  {
+    "id": "task-9",
+    "title": "Build invoice UI components (form, table, badges)",
+    "description": "Create InvoiceForm for editing line items, discount, tax, client selection. Build InvoiceTable for listing invoices with status filtering. Create StatusBadge component for draft/sent/viewed/paid/overdue. Create Nav component.",
+    "files": [
+      "src/components/InvoiceForm.tsx",
+      "src/components/InvoiceTable.tsx",
+      "src/components/StatusBadge.tsx",
+      "src/components/Nav.tsx"
+    ],
+    "dependencies": [
+      "task-1",
+      "task-3",
+      "task-4"
+    ],
+    "priority": 9,
+    "risk": "medium",
+    "notes": "InvoiceForm must allow inline client creation. Line items table with qty, unit_price (cents), description. Calculations previewed but not trusted — server recalculates on save. Nav shows login/logout based on auth."
+  },
+  {
+    "id": "task-10",
+    "title": "Build invoice list and detail pages",
+    "description": "Create invoices list page (/invoices) with table, filters, and pagination. Build invoice detail page (/invoices/[id]) showing full invoice, line items, and actions (send, mark-paid). Create edit page (/invoices/[id]/edit) for drafts.",
+    "files": [
+      "src/app/invoices/page.tsx",
+      "src/app/invoices/[id]/page.tsx",
+      "src/app/invoices/[id]/edit/page.tsx"
+    ],
+    "dependencies": [
+      "task-5",
+      "task-9"
+    ],
+    "priority": 10,
+    "risk": "medium",
+    "notes": "Detail page conditionally shows send button (draft), mark-paid (sent/viewed/overdue). Edit page only accessible for draft invoices. Use server components to fetch data directly from store."
+  },
+  {
+    "id": "task-11",
+    "title": "Build new invoice page and public view page",
+    "description": "Create new invoice page (/invoices/new) with InvoiceForm. Build public view page (/view/[token]) that displays invoice as read-only HTML (mirroring PDF). Implement main layout with Nav.",
+    "files": [
+      "src/app/invoices/new/page.tsx",
+      "src/app/view/[token]/page.tsx",
+      "src/app/layout.tsx"
+    ],
+    "dependencies": [
+      "task-6",
+      "task-7",
+      "task-9"
+    ],
+    "priority": 11,
+    "risk": "low",
+    "notes": "Public view page must not show edit actions. Layout includes Nav and auth state. New invoice page creates draft on submit, redirects to edit page."
+  },
+  {
+    "id": "task-12",
+    "title": "Final integration: home page and plan limit enforcement",
+    "description": "Create home page (/) that redirects to dashboard if logged in, else shows marketing. Add plan limit checks in client/invoice creation APIs (free: 5 clients, 10 invoices/month). Ensure all navigation works.",
+    "files": [
+      "src/app/page.tsx"
+    ],
+    "dependencies": [
+      "task-2",
+      "task-3",
+      "task-5",
+      "task-8",
+      "task-9",
+      "task-10",
+      "task-11"
+    ],
+    "priority": 12,
+    "risk": "low",
+    "notes": "Home page simple. Plan limits: check in POST /clients and POST /invoices. Seed user has pro plan (unlimited). All demo flows should work end-to-end."
+  }
+]

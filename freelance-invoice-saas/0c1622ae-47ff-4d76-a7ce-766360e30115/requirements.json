@@ -1,0 +1,91 @@
+{
+  "projectName": "freelance-invoice-saas",
+  "description": "A web-based SaaS invoicing platform tailored for freelancers to create, send, and track invoices and payments. It reduces administrative overhead by automating reminders, tracking payment status, and generating basic financial reports — replacing manual spreadsheet workflows for independent contractors.",
+  "features": [
+    "Invoice creation with line items, taxes, and discounts",
+    "Client management (contact details, billing address, payment history)",
+    "PDF generation and email delivery of invoices",
+    "Payment status tracking (draft, sent, viewed, paid, overdue)",
+    "Automated payment reminder emails on configurable schedules",
+    "Recurring invoice templates",
+    "Multi-currency support with exchange rate display",
+    "Stripe/PayPal integration for online payment collection",
+    "Dashboard with revenue summary, outstanding balances, and aging report",
+    "Expense tracking linked to projects",
+    "Time tracking with conversion to billable line items",
+    "Tax report export (annual summary by client)",
+    "Multi-user team accounts (e.g., freelancer + accountant access)",
+    "Custom branding on invoices (logo, colors, payment terms)",
+    "Client self-service portal to view and pay invoices"
+  ],
+  "mvpFeatures": [
+    "Invoice creation with line items, tax rate, and discount fields",
+    "Client management (name, email, billing address)",
+    "PDF generation and email delivery of invoices",
+    "Payment status tracking (draft, sent, paid, overdue) with manual mark-as-paid",
+    "Basic dashboard showing total outstanding, total paid (current month)"
+  ],
+  "entities": [
+    "User",
+    "Plan (subscription tier enum: free, pro, business)",
+    "Subscription",
+    "Client",
+    "Invoice",
+    "InvoiceLineItem",
+    "TaxRate",
+    "Payment",
+    "ReminderSchedule",
+    "RecurringTemplate",
+    "Expense",
+    "TimeEntry",
+    "InvoiceStatusHistory",
+    "EmailLog"
+  ],
+  "entityRelationships": [
+    "User 1:1 Subscription",
+    "Subscription N:1 Plan",
+    "User 1:N Client",
+    "User 1:N Invoice",
+    "Client 1:N Invoice",
+    "Invoice 1:N InvoiceLineItem",
+    "Invoice N:1 TaxRate",
+    "InvoiceLineItem N:1 TaxRate",
+    "Invoice 1:N Payment",
+    "Invoice 1:N InvoiceStatusHistory",
+    "Invoice 1:N EmailLog",
+    "Invoice N:1 RecurringTemplate",
+    "User 1:N RecurringTemplate",
+    "User 1:N ReminderSchedule",
+    "User 1:N Expense",
+    "User 1:N TimeEntry",
+    "TimeEntry N:1 InvoiceLineItem"
+  ],
+  "userFlows": [
+    "User signs up → chooses plan → verifies email → completes profile (business name, default currency, logo) → lands on empty dashboard with 'Create First Invoice' prompt",
+    "User creates invoice → selects existing client or creates new inline → adds line items with qty/rate → applies tax rate → previews PDF → sends via email → invoice status moves to 'sent'",
+    "Client receives email → clicks 'View Invoice' link (no login required) → views branded PDF in portal → clicks 'Pay Now' → completes Stripe checkout → invoice marked 'paid' → freelancer receives email notification",
+    "Invoice passes due date without payment → system moves status to 'overdue' → triggers reminder schedule → sends reminder emails at D+1, D+7, D+14 intervals → freelancer can disable reminders per invoice",
+    "User attempts to delete a client with existing invoices → warning prompt listing affected invoices → forced to either reassign invoices to another client or archive client instead of hard delete",
+    "Recurring template triggers on schedule → new invoice generated in 'draft' state → freelancer reviews and approves → invoice sent (or auto-sent if configured)"
+  ],
+  "constraints": [
+    "PDF generation must complete in under 3 seconds for invoices with up to 50 line items",
+    "API responses under 300ms p95 for dashboard and invoice list endpoints",
+    "Email delivery via transactional provider (SendGrid/Postmark) with delivery confirmation logging",
+    "Invoice data must be immutable once marked 'paid' — edits require a credit note workflow",
+    "Free plan capped at 5 active clients and 10 invoices/month enforced server-side",
+    "Invoice public view link must be accessible without authentication but scoped by signed URL token",
+    "Core invoice creation must be completable in under 5 user interactions"
+  ],
+  "risks": [
+    "PDF generation at scale: server-side rendering (Puppeteer/WeasyPrint) is CPU-heavy — needs async job queue (e.g., BullMQ + Redis) to avoid blocking API, adds infrastructure complexity from day one",
+    "Payment webhook reliability: Stripe webhook delivery is not guaranteed exactly-once — payment status updates require idempotency keys and deduplication logic to prevent double-marking invoices as paid",
+    "Multi-currency complexity: storing amounts in original currency vs. converted base currency creates reporting ambiguity — architectural decision needed upfront on whether to store both or normalize at write time",
+    "Email deliverability for invoice sends: freelancer's clients may have aggressive spam filters — SPF/DKIM must be configured correctly and sending domain reputation managed, or invoice delivery silently fails"
+  ],
+  "openQuestions": [
+    "Does the freelancer send invoices from their own email domain (requires custom SMTP or domain verification) or from a platform domain (e.g., invoices@freelanceinvoice.app)? This changes the email infrastructure architecture significantly.",
+    "Should payments collected via Stripe flow through a platform Stripe Connect account (enabling platform revenue share/fees) or directly into the freelancer's own Stripe account? Connect adds compliance complexity but enables monetization.",
+    "Is multi-language/locale support required for invoice templates (e.g., freelancers billing international clients who expect invoices in their language)? This affects the invoice rendering model and adds an i18n data layer."
+  ]
+}
