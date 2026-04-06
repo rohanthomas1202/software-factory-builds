@@ -1,0 +1,17 @@
+{
+  "buildId": "ae663068-2017-44d6-bb12-8e8b481a567d",
+  "prompt": "Build a project management tool with kanban boards and team collaboration",
+  "projectName": "kanban-collab",
+  "runNumber": 2,
+  "status": "partial",
+  "createdAt": 1775443899331,
+  "completedAt": 1775449777183,
+  "durationMs": 5877852,
+  "repoUrl": "https://github.com/rohanthomas1202/software-factory-builds/tree/main/kanban-collab_pvdkrat37",
+  "reviewIteration": 3,
+  "totalUsage": {
+    "inputTokens": 187266,
+    "outputTokens": 222953,
+    "cost": 0.84268195
+  }
+}

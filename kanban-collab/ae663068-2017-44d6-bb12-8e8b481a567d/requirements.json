@@ -1,0 +1,96 @@
+{
+  "risks": [
+    "Card ordering with concurrent drag-and-drop: two users moving cards simultaneously can cause rank collisions — requires fractional indexing (e.g., LexoRank) or server-authoritative ordering with conflict resolution",
+    "Real-time sync architecture choice (WebSockets via Socket.io vs. server-sent events vs. third-party like Pusher/Ably) affects horizontal scalability — sticky sessions or a pub/sub broker (Redis) needed if running multiple server instances",
+    "Board load performance degrades as card count grows — need to decide upfront whether to paginate cards per column or lazy-load, since this affects both API design and frontend rendering strategy",
+    "Notification fan-out: @mentions or card updates on high-membership workspaces could trigger hundreds of simultaneous notifications — requires a job queue (e.g., BullMQ) rather than inline processing"
+  ],
+  "entities": [
+    "User",
+    "Workspace",
+    "WorkspaceMember",
+    "RoleEnum (Owner, Admin, Member, Viewer)",
+    "Project",
+    "Board",
+    "Column",
+    "Card",
+    "CardAssignee",
+    "Label",
+    "CardLabel",
+    "Comment",
+    "Checklist",
+    "ChecklistItem",
+    "Attachment",
+    "Notification",
+    "ActivityLog",
+    "Invite"
+  ],
+  "features": [
+    "Kanban board with drag-and-drop cards across customizable columns",
+    "Real-time board updates when teammates move or edit cards",
+    "Task cards with title, description, assignee, due date, labels, and attachments",
+    "Team workspaces with role-based permissions (Owner, Admin, Member, Viewer)",
+    "Multiple boards per project",
+    "Card comments and @mention notifications",
+    "Activity log per card and per board",
+    "Assignee filtering and label-based filtering on boards",
+    "Due date calendar view",
+    "Email and in-app notifications",
+    "Board templates for common workflows (Bug Tracking, Sprint, Content Pipeline)",
+    "Card checklists with progress indicator",
+    "Archived cards and boards",
+    "CSV export of board data",
+    "Search across cards within a workspace"
+  ],
+  "userFlows": [
+    "User registers → verifies email → creates Workspace → invited teammates receive email → teammates accept invite and join Workspace",
+    "Member opens Board → drags card from 'In Progress' to 'Done' → all teammates on the same board see card move in real-time without page refresh",
+    "Member creates Card → sets due date → assigns teammate → assignee receives in-app and email notification → assignee opens card from notification",
+    "Member tries to delete a Column that still contains 10 cards → warning prompt shows card count → user must choose: move all cards to another column OR confirm force-delete which archives cards",
+    "Admin invites user via email → invite expires after 7 days → expired invite clicked → user sees expiry message → Admin must resend invite",
+    "Viewer role user attempts to drag a card → drag is disabled → tooltip explains read-only access",
+    "Member searches for a card by keyword → results show matching cards with their board and column context → clicking result opens card detail modal"
+  ],
+  "constraints": [
+    "Drag-and-drop reorder must persist card position within 500ms of drop (optimistic UI with server reconciliation)",
+    "Real-time updates must propagate to all connected board viewers within 1 second under normal network conditions",
+    "API responses under 300ms p95 for board load (all columns and cards fetched in single request)",
+    "Workspace invite links expire after 7 days",
+    "Attachment file size limit of 10MB per file",
+    "Board must remain usable (read-only fallback) if WebSocket connection drops",
+    "Column and card ordering must be deterministic — stored as fractional indexing or integer rank to avoid full re-rank on every move"
+  ],
+  "description": "A team-based project management tool centered on Kanban boards for visualizing workflow stages. Supports multi-user collaboration with real-time updates, task assignment, and progress tracking. Valuable for distributed teams needing a lightweight alternative to tools like Trello or Linear without per-seat pricing complexity.",
+  "mvpFeatures": [
+    "Kanban board with drag-and-drop cards and fixed columns (To Do, In Progress, Done)",
+    "User authentication and workspace creation with invite-by-email",
+    "Task cards with title, description, assignee, and due date",
+    "Role-based access: Owner and Member only",
+    "Card comments for basic collaboration"
+  ],
+  "projectName": "kanban-collab",
+  "openQuestions": [
+    "Is real-time collaboration scoped to seeing card movements only, or does it include live co-editing of card descriptions (latter requires CRDT or OT and significantly changes architecture)?",
+    "Are boards scoped to Projects which are scoped to Workspaces (3-tier hierarchy), or do users want a flat list of boards per Workspace — this changes navigation UX and data model depth?",
+    "Should notifications be strictly in-app and email, or is Slack/webhook integration required in v1 — this determines whether a notification abstraction layer is needed from day one?"
+  ],
+  "entityRelationships": [
+    "User N:N Workspace (via WorkspaceMember with RoleEnum)",
+    "Workspace 1:N Project",
+    "Project 1:N Board",
+    "Board 1:N Column",
+    "Column 1:N Card",
+    "Card N:N User (via CardAssignee)",
+    "Card N:N Label (via CardLabel)",
+    "Label N:1 Board",
+    "Card 1:N Comment",
+    "Comment N:1 User",
+    "Card 1:N Checklist",
+    "Checklist 1:N ChecklistItem",
+    "Card 1:N Attachment",
+    "Card 1:N ActivityLog",
+    "Board 1:N ActivityLog",
+    "User 1:N Notification",
+    "Workspace 1:N Invite"
+  ]
+}

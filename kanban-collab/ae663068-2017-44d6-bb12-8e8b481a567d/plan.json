@@ -1,0 +1,260 @@
+[
+  {
+    "id": "task-1",
+    "risk": "low",
+    "files": [
+      "package.json",
+      "tsconfig.json",
+      "tailwind.config.ts",
+      "src/lib/types.ts",
+      "src/lib/store.ts",
+      "src/lib/seed.ts"
+    ],
+    "notes": "Store uses Map<id, Entity> for each type. Seed creates Alice, Bob, workspace, boards, columns, cards, comments, notifications as per architecture.",
+    "title": "Set up project foundation: config, types, and store",
+    "priority": 1,
+    "description": "Create package.json with Next.js, TypeScript, Tailwind dependencies. Configure tsconfig.json and tailwind.config.ts. Define core TypeScript interfaces (User, Workspace, Board, Column, Card, Comment, Invite, Notification, WorkspaceMember). Implement in-memory store with Maps for each entity, export typed access functions, and create seed.ts with demo data.",
+    "dependencies": []
+  },
+  {
+    "id": "task-2",
+    "risk": "medium",
+    "files": [
+      "src/lib/auth.ts",
+      "src/lib/rank.ts",
+      "src/lib/notifications.ts"
+    ],
+    "notes": "Auth uses HttpOnly cookies with randomUUID tokens. Passwords stored plaintext with TODO comment. Rank algorithm handles insert-between cases like 'a', 'b' → 'am'.",
+    "title": "Implement core utilities: auth, rank, and notifications",
+    "priority": 1,
+    "description": "Create auth.ts with cookie-based session management using Map<token, userId>. Implement rank.ts with fractional string ranking (simple midpoint algorithm). Create notifications.ts with sendEmail() stub that logs to console. All utilities use built-in Node modules only (crypto.randomUUID, etc.).",
+    "dependencies": [
+      "task-1"
+    ]
+  },
+  {
+    "id": "task-3",
+    "risk": "medium",
+    "files": [
+      "src/app/api/auth/register/route.ts",
+      "src/app/api/auth/login/route.ts",
+      "src/app/api/auth/logout/route.ts",
+      "src/app/api/auth/me/route.ts"
+    ],
+    "notes": "Login must set HttpOnly cookie 'session_token'. Register automatically sets emailVerifiedAt (bypass for demo). All endpoints validate session via auth.getUserFromRequest.",
+    "title": "Build authentication API routes (register, login, logout, me)",
+    "priority": 2,
+    "description": "Implement POST /api/auth/register (creates user with emailVerifiedAt auto-set), POST /api/auth/login (validates credentials, sets session cookie), POST /api/auth/logout (clears cookie), GET /api/auth/me (returns current user). All routes use auth.ts utilities and store.ts data.",
+    "dependencies": [
+      "task-1",
+      "task-2"
+    ]
+  },
+  {
+    "id": "task-4",
+    "risk": "medium",
+    "files": [
+      "src/app/login/page.tsx",
+      "src/app/register/page.tsx",
+      "src/app/accept-invite/page.tsx"
+    ],
+    "notes": "Accept-invite page must handle two flows: new user (show registration form) and existing user (redirect to login). Token validation via POST /api/invites/accept.",
+    "title": "Create auth pages: login, register, and accept-invite",
+    "priority": 2,
+    "description": "Build login page with email/password form that calls /api/auth/login. Build register page with email, password, displayName. Build accept-invite page that takes token param, validates via API, handles new user registration or existing user login flow.",
+    "dependencies": [
+      "task-3"
+    ]
+  },
+  {
+    "id": "task-5",
+    "risk": "low",
+    "files": [
+      "src/app/api/workspaces/route.ts",
+      "src/app/api/workspaces/[workspaceId]/route.ts",
+      "src/app/api/workspaces/[workspaceId]/boards/route.ts",
+      "src/app/dashboard/page.tsx"
+    ],
+    "notes": "Workspace creation requires unique slug validation. All endpoints check workspace membership via assertMember helper. Dashboard page uses /api/auth/me to get user data.",
+    "title": "Implement workspace API routes and dashboard page",
+    "priority": 3,
+    "description": "Create POST /api/workspaces (create workspace), GET /api/workspaces/[workspaceId] (get workspace with members), GET /api/workspaces/[workspaceId]/boards (list boards). Build dashboard page showing user's workspaces with navigation to workspace pages.",
+    "dependencies": [
+      "task-3"
+    ]
+  },
+  {
+    "id": "task-6",
+    "risk": "medium",
+    "files": [
+      "src/app/api/workspaces/[workspaceId]/invites/route.ts",
+      "src/app/api/workspaces/[workspaceId]/invites/[inviteId]/route.ts",
+      "src/app/api/invites/accept/route.ts",
+      "src/app/workspace/[workspaceId]/settings/page.tsx"
+    ],
+    "notes": "Invite tokens are UUIDs stored plaintext (demo). Accept endpoint returns 410 for expired invites. Settings page shows member list and invite form with email validation.",
+    "title": "Build workspace invite system (API + settings page)",
+    "priority": 3,
+    "description": "Implement POST /api/workspaces/[workspaceId]/invites (create invite, log email), DELETE /api/workspaces/[workspaceId]/invites/[inviteId] (revoke), POST /api/invites/accept (validate token, add member). Create workspace settings page showing members, pending invites, invite form.",
+    "dependencies": [
+      "task-5"
+    ]
+  },
+  {
+    "id": "task-7",
+    "risk": "low",
+    "files": [
+      "src/app/api/boards/[boardId]/route.ts",
+      "src/app/workspace/[workspaceId]/page.tsx"
+    ],
+    "notes": "Board creation auto-creates 3 system columns (To Do, In Progress, Done) with ranks 1,2,3. GET /boards returns nested structure for frontend efficiency.",
+    "title": "Implement board and column APIs",
+    "priority": 3,
+    "description": "Create POST /api/workspaces/[workspaceId]/boards (creates board with 3 fixed columns), GET /api/boards/[boardId] (returns board with columns and cards), PATCH /api/boards/[boardId] (rename/archive). Build workspace page showing board list.",
+    "dependencies": [
+      "task-5"
+    ]
+  },
+  {
+    "id": "task-8",
+    "risk": "high",
+    "files": [
+      "src/components/KanbanBoard.tsx",
+      "src/components/KanbanColumn.tsx",
+      "src/components/CardTile.tsx"
+    ],
+    "notes": "Drag-and-drop uses native API, no external libraries. CardTile shows overdue indicator if dueDate < today. Assignee shown as avatar initial. Implement optimistic updates on drag.",
+    "title": "Build core Kanban UI components (Board, Column, CardTile)",
+    "priority": 4,
+    "description": "Create KanbanBoard component with horizontal column layout. Build KanbanColumn component rendering CardTile list. Implement CardTile showing title, assignee avatar initial, due date, overdue indicator. Add HTML5 drag-and-drop with onDragStart/onDragOver/onDrop handlers.",
+    "dependencies": [
+      "task-1"
+    ]
+  },
+  {
+    "id": "task-9",
+    "risk": "medium",
+    "files": [
+      "src/app/api/columns/[columnId]/cards/route.ts",
+      "src/app/api/cards/[cardId]/route.ts",
+      "src/app/api/cards/[cardId]/comments/route.ts",
+      "src/app/api/comments/[commentId]/route.ts"
+    ],
+    "notes": "Card PATCH handles column moves (columnId) and reordering (rank). Comment edit/delete restricted to author. Card assignee is nullable foreign key to User.",
+    "title": "Implement card and comment APIs",
+    "priority": 4,
+    "description": "Create POST /api/columns/[columnId]/cards (create card), GET/PATCH /api/cards/[cardId] (get/update card), DELETE /api/cards/[cardId] (archive). Build GET/POST /api/cards/[cardId]/comments and PATCH/DELETE /api/comments/[commentId] for comment CRUD.",
+    "dependencies": [
+      "task-7"
+    ]
+  },
+  {
+    "id": "task-10",
+    "risk": "medium",
+    "files": [
+      "src/components/CardModal.tsx",
+      "src/components/CommentSection.tsx"
+    ],
+    "notes": "Assignee selector filters workspace members. Due date uses HTML date input. Comment edit shows inline textarea. Modal uses Portal for overlay. Comment pagination uses query param ?page.",
+    "title": "Build card modal and comment section components",
+    "priority": 5,
+    "description": "Create CardModal component showing card details (title, description, assignee selector, due date picker). Implement CommentSection with paginated comments (20 per page), comment form, edit/delete controls. Add assignee dropdown populated from workspace members.",
+    "dependencies": [
+      "task-8",
+      "task-9"
+    ]
+  },
+  {
+    "id": "task-11",
+    "risk": "high",
+    "files": [
+      "src/app/board/[boardId]/page.tsx",
+      "src/hooks/useBoard.ts"
+    ],
+    "notes": "Page is client component for drag-and-drop. useBoard handles optimistic updates and polling reconciliation. Card moves call PATCH with columnId and rank. Show 'Live updates paused' banner on error.",
+    "title": "Create board page with real-time polling integration",
+    "priority": 5,
+    "description": "Build board page ([boardId]) that renders KanbanBoard. Implement useBoard hook polling GET /api/boards/[boardId] every 3 seconds. Add card creation via column footer. Handle drag-and-drop with PATCH /cards/:id calls.",
+    "dependencies": [
+      "task-8",
+      "task-9"
+    ]
+  },
+  {
+    "id": "task-12",
+    "risk": "medium",
+    "files": [
+      "src/app/api/notifications/route.ts",
+      "src/app/api/notifications/[notificationId]/read/route.ts",
+      "src/app/api/notifications/read-all/route.ts",
+      "src/components/NotificationBell.tsx",
+      "src/components/InviteModal.tsx"
+    ],
+    "notes": "Notifications generated on card assignment, comment mentions, invites. NotificationBell polls every 10 seconds. InviteModal used in workspace settings.",
+    "title": "Implement notifications API and UI components",
+    "priority": 6,
+    "description": "Create GET /api/notifications (list unread), PATCH /api/notifications/[id]/read (mark read), PATCH /api/notifications/read-all. Build NotificationBell component with dropdown showing notifications. Create InviteModal for sending invites.",
+    "dependencies": [
+      "task-6",
+      "task-9"
+    ]
+  },
+  {
+    "id": "task-13",
+    "risk": "low",
+    "files": [
+      "src/components/Navbar.tsx",
+      "src/app/layout.tsx",
+      "src/app/page.tsx"
+    ],
+    "notes": "Navbar shows user displayName and avatar initial. Workspace switcher uses /api/workspaces. Layout applies global Tailwind classes.",
+    "title": "Build shared UI components and layout",
+    "priority": 6,
+    "description": "Create Navbar with user avatar, workspace switcher, notification bell. Implement layout.tsx with navbar, Tailwind base styles. Build home page (/) with project description and auth CTAs.",
+    "dependencies": [
+      "task-4",
+      "task-12"
+    ]
+  },
+  {
+    "id": "task-14",
+    "risk": "low",
+    "files": [
+      "src/hooks/useNotifications.ts"
+    ],
+    "notes": "useNotifications manages unread count state. Card assignee changes should trigger notification via PATCH /cards. Overdue indicator compares dueDate with current date.",
+    "title": "Implement useNotifications hook and final integration",
+    "priority": 7,
+    "description": "Create useNotifications hook polling /api/notifications. Integrate NotificationBell into Navbar. Connect CardModal assignee changes to notification creation. Add overdue indicator logic to CardTile.",
+    "dependencies": [
+      "task-11",
+      "task-12",
+      "task-13"
+    ]
+  },
+  {
+    "id": "task-15",
+    "risk": "medium",
+    "files": [],
+    "notes": "Test drag failure by simulating API error. Verify invite flow works by copying console.log invite URL. Check real-time polling updates between two browser sessions.",
+    "title": "Final polish, error handling, and seed verification",
+    "priority": 8,
+    "description": "Add error toasts for failed operations. Implement card snap-back on drag failure. Verify seed data creates correct demo state. Add loading states to all async operations. Test full user flow from registration to board interaction.",
+    "dependencies": [
+      "task-1",
+      "task-2",
+      "task-3",
+      "task-4",
+      "task-5",
+      "task-6",
+      "task-7",
+      "task-8",
+      "task-9",
+      "task-10",
+      "task-11",
+      "task-12",
+      "task-13",
+      "task-14"
+    ]
+  }
+]
