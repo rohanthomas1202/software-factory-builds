@@ -1,0 +1,197 @@
+[
+  {
+    "id": "task-1",
+    "risk": "low",
+    "files": [
+      "package.json",
+      "tsconfig.json",
+      "tailwind.config.ts",
+      "src/lib/types.ts",
+      "src/lib/store.ts",
+      "src/lib/auth.ts",
+      "src/lib/seed.ts"
+    ],
+    "notes": "Implement password as plaintext for MVP (with PRODUCTION_UPGRADE comment). The store should export typed Maps: users, workspaces, workspaceMembers, etc. Seed should create Alice (owner) and Bob (member), workspace, board with Backlog/In Progress/Review/Done columns.",
+    "title": "Set up project foundation: config, types, store, and auth utilities",
+    "priority": 1,
+    "description": "Create package.json with dependencies (Next.js, TypeScript, Tailwind, ws). Create tsconfig.json and tailwind.config.ts. Implement core TypeScript interfaces (User, Workspace, Column, Card, etc.) in src/lib/types.ts. Create in-memory store with Maps for each entity. Implement auth utility functions for session management (createSession, getSession, deleteSession) using Map-based session storage. Create seed function that populates store with initial data (2 users, workspace, board with 4 columns, 12 cards).",
+    "dependencies": []
+  },
+  {
+    "id": "task-2",
+    "risk": "medium",
+    "files": [
+      "src/lib/lexorank.ts",
+      "server.ts",
+      "src/lib/ws-server.ts"
+    ],
+    "notes": "Custom server is required for WebSocket support. The EventEmitter in ws-server.ts should maintain board rooms (Map<boardId, Set<WebSocket>>). WebSocket messages should authenticate via session cookie. LexoRank must generate strings like 'a', 'b', 'c' for initial positions.",
+    "title": "Implement LexoRank utility and custom HTTP/WebSocket server",
+    "priority": 2,
+    "description": "Create lexorank.ts with LexoRank implementation for fractional indexing (midpoint string generation between two strings). Create server.ts as a custom Node.js HTTP server that wraps Next.js and attaches a WebSocket server via ws library. Implement ws-server.ts with EventEmitter-based pub/sub for board rooms and connection management. Server must share port 3000 for both HTTP and WebSocket.",
+    "dependencies": [
+      "task-1"
+    ]
+  },
+  {
+    "id": "task-3",
+    "risk": "low",
+    "files": [
+      "src/app/layout.tsx",
+      "src/app/api/auth/register/route.ts",
+      "src/app/api/auth/login/route.ts",
+      "src/app/api/auth/logout/route.ts",
+      "src/app/api/auth/me/route.ts"
+    ],
+    "notes": "All API routes must check session via auth.getSession(cookie). Set HttpOnly, SameSite=Strict cookie named 'session' with UUID token. Return proper HTTP status codes (400 for validation errors, 401 for invalid auth).",
+    "title": "Build authentication API routes and layout",
+    "priority": 3,
+    "description": "Create layout.tsx with global layout, session provider, and NotificationBell. Implement /api/auth/register, /api/auth/login, /api/auth/logout, and /api/auth/me routes. Register validates email/password/displayName, creates user, sets HttpOnly session cookie. Login validates credentials and sets cookie. Me returns current user from session. Logout clears cookie.",
+    "dependencies": [
+      "task-1",
+      "task-2"
+    ]
+  },
+  {
+    "id": "task-4",
+    "risk": "low",
+    "files": [
+      "src/app/page.tsx",
+      "src/app/login/page.tsx",
+      "src/app/register/page.tsx"
+    ],
+    "notes": "Use React state for form fields. Display validation errors (email format, password length). On successful login/register, redirect to workspace page. Home page should fetch /api/auth/me to determine redirect.",
+    "title": "Build authentication pages: login, register, and home",
+    "priority": 4,
+    "description": "Create login and register pages with form validation. Home page (/) should redirect to /login if unauthenticated, or to user's first workspace if authenticated. Implement basic form components with Tailwind styling. Forms should call respective API endpoints and handle errors.",
+    "dependencies": [
+      "task-3"
+    ]
+  },
+  {
+    "id": "task-5",
+    "risk": "medium",
+    "files": [
+      "src/app/api/workspaces/route.ts",
+      "src/app/api/workspaces/[workspaceId]/route.ts",
+      "src/app/workspace/[workspaceId]/page.tsx"
+    ],
+    "notes": "POST /workspaces validates user is authenticated and creates workspace with caller as Owner. GET /workspaces/[workspaceId] must validate user is workspace member. Workspace page should fetch workspace details and display projects with 'Create Project' button.",
+    "title": "Implement workspace API routes and workspace page",
+    "priority": 5,
+    "description": "Create /api/workspaces (POST for creating workspace) and /api/workspaces/[workspaceId] (GET for workspace details with members and projects). Create workspace page at /workspace/[workspaceId] that lists projects and shows member list. Implement basic UI with project cards and member avatars.",
+    "dependencies": [
+      "task-3"
+    ]
+  },
+  {
+    "id": "task-6",
+    "risk": "high",
+    "files": [
+      "src/app/api/workspaces/[workspaceId]/projects/route.ts",
+      "src/app/api/boards/[boardId]/route.ts",
+      "src/components/BoardView.tsx",
+      "src/components/ColumnList.tsx",
+      "src/components/CardItem.tsx",
+      "src/app/workspace/[workspaceId]/board/[boardId]/page.tsx"
+    ],
+    "notes": "GET /boards/[boardId] must return board object with columns sorted by position, each column with cards sorted by position (archived=false only). BoardView must implement onDragStart, onDragOver, onDrop handlers. Optimistic updates on drag. CardItem shows title, assignee avatar, priority badge (color-coded).",
+    "title": "Build project and board API routes with drag-and-drop board UI",
+    "priority": 6,
+    "description": "Create /api/workspaces/[workspaceId]/projects (POST to create project and its first board). Create /api/boards/[boardId] (GET returns board with columns and cards). Create BoardView component with horizontal column layout using HTML5 Drag and Drop API. Implement ColumnList and CardItem components. Create board page at /workspace/[workspaceId]/board/[boardId].",
+    "dependencies": [
+      "task-1",
+      "task-5"
+    ]
+  },
+  {
+    "id": "task-7",
+    "risk": "high",
+    "files": [
+      "src/app/api/boards/[boardId]/columns/route.ts",
+      "src/app/api/columns/[columnId]/route.ts",
+      "src/app/api/columns/[columnId]/cards/route.ts",
+      "src/app/api/cards/[cardId]/route.ts",
+      "src/hooks/useBoardSocket.ts"
+    ],
+    "notes": "PATCH /cards/[cardId] must update position (LexoRank string) and columnId, then broadcast WebSocket event to board room. useBoardSocket should handle reconnection. On card.moved event, update local state without re-fetch. Server must validate user has access to board.",
+    "title": "Implement column and card API routes with real-time WebSocket integration",
+    "priority": 7,
+    "description": "Create /api/boards/[boardId]/columns (POST), /api/columns/[columnId] (PATCH), /api/columns/[columnId]/cards (POST), /api/cards/[cardId] (GET, PATCH). Build useBoardSocket hook that connects to WebSocket, joins board room, and handles card.moved, card.updated events. Integrate hook into BoardView to apply real-time updates.",
+    "dependencies": [
+      "task-2",
+      "task-6"
+    ]
+  },
+  {
+    "id": "task-8",
+    "risk": "medium",
+    "files": [
+      "src/components/CreateCardInline.tsx",
+      "src/components/CardModal.tsx"
+    ],
+    "notes": "CardModal fetches card details via GET /cards/[cardId]. Each field change triggers debounced PATCH. Assignee dropdown should show workspace members. Due date uses HTML date input. Priority is select dropdown. Modal URL should update query param (?cardId=) for deep linking.",
+    "title": "Build card creation inline and card detail modal",
+    "priority": 8,
+    "description": "Create CreateCardInline component that renders '+' button in column, expands to title input, creates card on Enter. Create CardModal component that opens on card click, shows card details (title, description, assignee, due date, priority). Implement form fields with auto-save (debounced PATCH requests). Modal should close on overlay click or Escape.",
+    "dependencies": [
+      "task-6",
+      "task-7"
+    ]
+  },
+  {
+    "id": "task-9",
+    "risk": "medium",
+    "files": [
+      "src/app/api/cards/[cardId]/comments/route.ts",
+      "src/app/api/comments/[commentId]/route.ts",
+      "src/components/CommentThread.tsx"
+    ],
+    "notes": "POST /comments parses body for @{uuid} patterns. Creates Notification(type=mention) for each valid mentioned user who is workspace member. Comments are soft-deleted (set deletedAt). GET returns comments with author info, sorted by createdAt. CommentThread should show edit/delete buttons for author only.",
+    "title": "Implement comment system with @mention parsing",
+    "priority": 9,
+    "description": "Create /api/cards/[cardId]/comments (POST, GET) and /api/comments/[commentId] (PATCH, DELETE). Build CommentThread component that displays comments with author avatar and timestamp. Implement @mention parsing in comment body: server scans for @{userId} tokens, validates user is workspace member, creates Notification records. Client-side mention dropdown in comment input.",
+    "dependencies": [
+      "task-7"
+    ]
+  },
+  {
+    "id": "task-10",
+    "risk": "medium",
+    "files": [
+      "src/app/api/notifications/route.ts",
+      "src/app/api/notifications/[notificationId]/read/route.ts",
+      "src/components/NotificationBell.tsx",
+      "src/app/api/workspaces/[workspaceId]/invites/route.ts",
+      "src/app/api/invites/[token]/accept/route.ts",
+      "src/components/InviteMemberModal.tsx",
+      "src/app/invite/[token]/page.tsx"
+    ],
+    "notes": "Notifications should link to card with comment scroll anchor. Invite token is UUID with 7-day expiry. Accept endpoint adds user as workspace member. Invite page handles both authenticated and unauthenticated users (redirects to register/login). Invite emails are simulated (log token to console).",
+    "title": "Build notification system and invite workflow",
+    "priority": 10,
+    "description": "Create /api/notifications and /api/notifications/[notificationId]/read routes. Build NotificationBell component that shows unread count and dropdown list. Create /api/workspaces/[workspaceId]/invites (POST), /api/invites/[token]/accept (POST), and invite page. Build InviteMemberModal for workspace owners.",
+    "dependencies": [
+      "task-5",
+      "task-9"
+    ]
+  },
+  {
+    "id": "task-11",
+    "risk": "low",
+    "files": [
+      "src/app/api/workspaces/[workspaceId]/members/[userId]/route.ts",
+      "src/hooks/useNotifications.ts"
+    ],
+    "notes": "DELETE /members validates caller is workspace owner. useNotifications hook should listen for WebSocket notification events and update unread count. Ensure all WebSocket events (card.moved, card.updated, comment.created) are broadcast correctly. Seed data should run automatically when store is empty.",
+    "title": "Implement member management and final integrations",
+    "priority": 11,
+    "description": "Create /api/workspaces/[workspaceId]/members/[userId] (DELETE for owner to remove members). Add member list to workspace page with remove button for owner. Integrate notification WebSocket pushes in useBoardSocket. Finalize real-time comment creation broadcasts. Add seed data initialization on server start.",
+    "dependencies": [
+      "task-2",
+      "task-5",
+      "task-9",
+      "task-10"
+    ]
+  }
+]
