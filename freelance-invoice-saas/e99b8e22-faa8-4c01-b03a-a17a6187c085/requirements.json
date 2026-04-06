@@ -1,0 +1,84 @@
+{
+  "risks": [
+    "Stripe webhook reliability: payment status updates depend on webhook delivery; requires idempotency keys, retry handling, and reconciliation logic to avoid missed or duplicate Paid events",
+    "PDF generation at scale: server-side PDF rendering (e.g., Puppeteer or WeasyPrint) is memory-intensive; needs queuing or a dedicated rendering service to avoid blocking the main API under load",
+    "Client portal authentication-free access: public invoice links need expiry logic, rate limiting, and care around exposing financial data — token design must balance convenience with security",
+    "Recurring invoice scheduling: cron-based scheduling must handle timezone edge cases, failed sends, and idempotency so invoices are never duplicated on retry after a job failure"
+  ],
+  "entities": [
+    "User",
+    "Plan (enum: Free, Pro, Business)",
+    "Client",
+    "Invoice",
+    "InvoiceLineItem",
+    "Payment",
+    "TaxRate",
+    "InvoiceTemplate",
+    "RecurringSchedule",
+    "Expense",
+    "EmailLog",
+    "InvoiceStatusHistory"
+  ],
+  "features": [
+    "Create and send branded PDF invoices via email",
+    "Client address book with contact and billing details",
+    "Line item builder with quantity, rate, and tax support",
+    "Invoice status tracking (Draft, Sent, Viewed, Paid, Overdue)",
+    "Automatic overdue detection and reminder emails",
+    "Payment integration (Stripe) for online payment links on invoices",
+    "Dashboard with revenue summary, outstanding balance, and overdue count",
+    "Recurring invoice scheduling (weekly/monthly/custom)",
+    "Multi-currency support with exchange rate display",
+    "Expense tracking linked to projects",
+    "Client portal for viewing and paying invoices without login",
+    "Tax report export (annual summary by client)",
+    "Custom invoice templates and branding (logo, colors)",
+    "Team/sub-account support for small agencies"
+  ],
+  "userFlows": [
+    "User signs up → selects plan → completes profile (name, business name, payment details) → lands on dashboard",
+    "User creates client → creates invoice → adds line items → applies tax rate → previews PDF → sends via email → client receives link → client views invoice (status: Viewed) → client pays via Stripe → invoice marked Paid → user notified",
+    "User creates invoice → sends → invoice passes due date unpaid → system marks Overdue → reminder email sent to client → client disputes → user manually updates notes",
+    "User enables recurring invoice for a client → sets frequency and start date → system auto-generates invoice on schedule → sends automatically → user reviews in dashboard",
+    "User tries to delete a client with unpaid invoices → warning shown listing outstanding invoices → must mark invoices paid/void or reassign before deletion proceeds",
+    "Client receives invoice email → clicks link → views invoice in client portal (no login required) → pays via embedded Stripe checkout → payment confirmed → invoice status updates in real time"
+  ],
+  "constraints": [
+    "PDF generation must complete in under 3 seconds",
+    "Invoice unique share links must be publicly accessible without authentication",
+    "API responses under 300ms p95 for dashboard and invoice list endpoints",
+    "Email delivery via transactional provider (e.g., Resend or SendGrid) with delivery logging",
+    "Stripe webhook processing must be idempotent to prevent duplicate payment records",
+    "Core invoice creation flow completable in under 5 user interactions",
+    "Must support at least USD, EUR, GBP, CAD currencies at launch"
+  ],
+  "description": "A SaaS invoicing platform built for independent freelancers to create, send, and track invoices and payments. It reduces the administrative burden of freelance work by centralizing client management, invoice lifecycle tracking, and payment status in one tool — eliminating spreadsheet-based workarounds.",
+  "mvpFeatures": [
+    "Create invoices with line items (description, quantity, rate, tax) and generate PDF",
+    "Client management (name, email, billing address)",
+    "Send invoice via email with a unique shareable link",
+    "Manual payment marking + Stripe payment link integration",
+    "Invoice status lifecycle (Draft → Sent → Viewed → Paid/Overdue)"
+  ],
+  "projectName": "freelance-invoice-saas",
+  "openQuestions": [
+    "Is this single-tenant per freelancer, or will team/agency accounts with multiple users sharing clients and invoices be required at launch? This changes the data model's ownership and permission layer significantly.",
+    "Should partial payments be supported (e.g., a client pays 50% now, 50% later)? This affects the Payment entity design, invoice status logic, and how 'Paid' is defined.",
+    "Will the app need to comply with specific regional invoicing regulations (e.g., EU VAT invoice requirements, GST in Australia)? This impacts required invoice fields, tax logic complexity, and potentially report formats."
+  ],
+  "entityRelationships": [
+    "User 1:1 Plan",
+    "User 1:N Client",
+    "User 1:N Invoice",
+    "Client 1:N Invoice",
+    "Invoice 1:N InvoiceLineItem",
+    "Invoice 1:N Payment",
+    "Invoice N:1 TaxRate",
+    "Invoice N:1 InvoiceTemplate",
+    "Invoice 1:N EmailLog",
+    "Invoice 1:N InvoiceStatusHistory",
+    "Invoice 1:1 RecurringSchedule",
+    "User 1:N Expense",
+    "Invoice 1:N Expense"
+  ]
+}

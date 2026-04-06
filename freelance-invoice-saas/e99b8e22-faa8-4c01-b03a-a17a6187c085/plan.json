@@ -1,0 +1,215 @@
+[
+  {
+    "id": "task-1",
+    "risk": "low",
+    "files": [
+      "package.json",
+      "tsconfig.json",
+      "tailwind.config.ts",
+      "src/lib/types.ts",
+      "src/lib/store.ts",
+      "src/lib/seed.ts"
+    ],
+    "notes": "All other tasks depend on types.ts. The store must export typed Maps (users, clients, invoices, lineItems, payments, taxRates, statusHistory, emailLogs, sessions). Seed function must create demo user, two clients, three tax rates, and four invoices with different statuses as described.",
+    "title": "Set up project foundation: config, types, and store",
+    "priority": 1,
+    "description": "Create package.json with dependencies (Next.js 16, TypeScript, Tailwind), tsconfig.json, tailwind.config.ts, core type definitions (src/lib/types.ts) matching the PRD data model, and the in-memory data store (src/lib/store.ts) with typed Maps for each entity and a seed function (src/lib/seed.ts) to populate demo data.",
+    "dependencies": []
+  },
+  {
+    "id": "task-2",
+    "risk": "medium",
+    "files": [
+      "src/lib/auth.ts",
+      "src/app/api/auth/register/route.ts",
+      "src/app/api/auth/login/route.ts",
+      "src/app/api/auth/logout/route.ts",
+      "src/app/api/auth/me/route.ts",
+      "src/middleware.ts"
+    ],
+    "notes": "Sessions use a Map<token, userId> in store.ts. Token is generated with crypto.randomBytes. Passwords stored plaintext for now (with a comment). Middleware should check for session cookie and redirect unauthenticated users from protected routes.",
+    "title": "Build authentication system: session management and API routes",
+    "priority": 2,
+    "description": "Implement cookie-based session auth. Create src/lib/auth.ts with functions for login/logout and session validation. Build API routes: POST /api/auth/register (creates user, sets cookie), POST /api/auth/login (validates credentials, sets cookie), POST /api/auth/logout (clears cookie), GET /api/auth/me (returns current user). Implement middleware.ts for protecting routes.",
+    "dependencies": [
+      "task-1"
+    ]
+  },
+  {
+    "id": "task-3",
+    "risk": "medium",
+    "files": [
+      "src/app/api/clients/route.ts",
+      "src/app/api/clients/[id]/route.ts",
+      "src/components/ClientForm.tsx",
+      "src/app/(dashboard)/clients/page.tsx",
+      "src/app/(dashboard)/clients/[id]/page.tsx"
+    ],
+    "notes": "Client deletion is soft-delete (set deleted_at). Billing address stored as JSONB. The form must validate email format. Client list should exclude soft-deleted by default.",
+    "title": "Build client management: API routes and UI components",
+    "priority": 3,
+    "description": "Implement client CRUD API routes: GET/POST /api/clients, GET/PUT/DELETE /api/clients/[id]. DELETE must check for unpaid invoices and return 409 if blocking. Create ClientForm component for create/edit with validation (email RFC 5322). Build clients list page and client detail/edit page.",
+    "dependencies": [
+      "task-1",
+      "task-2"
+    ]
+  },
+  {
+    "id": "task-4",
+    "risk": "high",
+    "files": [
+      "src/lib/invoice-utils.ts",
+      "src/lib/overdue.ts",
+      "src/lib/pdf.ts"
+    ],
+    "notes": "Invoice totals must be computed server-side and stored. Overdue detection runs lazily (called from dashboard). PDF generation returns a URL to a print page (uses Tailwind print utilities).",
+    "title": "Build invoice utilities: calculations, overdue detection, and PDF generation",
+    "priority": 4,
+    "description": "Create src/lib/invoice-utils.ts with functions for computing invoice totals (subtotal, tax, total) server-side. Create src/lib/overdue.ts with a function to run overdue detection (marks invoices overdue, sends reminder). Create src/lib/pdf.ts with function to generate a print-optimized HTML page URL (no real PDF).",
+    "dependencies": [
+      "task-1"
+    ]
+  },
+  {
+    "id": "task-5",
+    "risk": "high",
+    "files": [
+      "src/app/api/invoices/route.ts",
+      "src/app/api/invoices/[id]/route.ts"
+    ],
+    "notes": "Invoice number auto-increment uses a Map<userId, number> in store. Public token must be unique (use crypto.randomUUID). Line items must include tax_rate_id. Totals are calculated via invoice-utils and stored.",
+    "title": "Build core invoice API routes: CRUD, line items, and status",
+    "priority": 5,
+    "description": "Implement invoice CRUD API routes: GET/POST /api/invoices, GET/PUT/DELETE /api/invoices/[id]. POST creates invoice in Draft status with auto-incremented invoice_number per user, generates public_token (UUIDv4). PUT only allowed for Draft invoices. DELETE voids Draft invoices. Include line items in create/update.",
+    "dependencies": [
+      "task-1",
+      "task-4"
+    ]
+  },
+  {
+    "id": "task-6",
+    "risk": "medium",
+    "files": [
+      "src/app/api/invoices/[id]/send/route.ts",
+      "src/app/api/invoices/[id]/payments/route.ts",
+      "src/app/api/invoices/[id]/pdf/route.ts"
+    ],
+    "notes": "Send route must write InvoiceStatusHistory and EmailLog (status=Delivered). Payment route creates Payment record and updates invoice status. PDF route returns a URL to a print page (actual page built later).",
+    "title": "Build invoice send, payment, and preview API routes",
+    "priority": 6,
+    "description": "Implement POST /api/invoices/[id]/send to transition invoice from Draft→Sent, simulate email send (log to EmailLog), and create placeholder Stripe payment link. Implement POST /api/invoices/[id]/payments for manual payments (transitions to Paid if amount >= total). Implement GET /api/invoices/[id]/pdf returning a URL to the printable invoice page.",
+    "dependencies": [
+      "task-4",
+      "task-5"
+    ]
+  },
+  {
+    "id": "task-7",
+    "risk": "medium",
+    "files": [
+      "src/app/api/invoices/view/[token]/route.ts",
+      "src/app/api/dashboard/summary/route.ts"
+    ],
+    "notes": "Public view route must not require auth. Status transition must be idempotent (no duplicate history). Dashboard summary must compute aggregates efficiently from store data and trigger overdue detection.",
+    "title": "Build public invoice view (no auth) and dashboard API",
+    "priority": 7,
+    "description": "Create GET /api/invoices/view/[token] route to fetch invoice by public_token and transition status Sent→Viewed idempotently. Create GET /api/dashboard/summary to return total paid, outstanding balance, overdue count for authenticated user (calls overdue detection).",
+    "dependencies": [
+      "task-4",
+      "task-5"
+    ]
+  },
+  {
+    "id": "task-8",
+    "risk": "medium",
+    "files": [
+      "src/app/api/tax-rates/route.ts",
+      "src/app/api/tax-rates/[id]/route.ts",
+      "src/components/InvoiceForm.tsx",
+      "src/components/LineItemRow.tsx",
+      "src/components/InvoiceStatusBadge.tsx",
+      "src/components/DashboardCard.tsx"
+    ],
+    "notes": "Tax rates are user-scoped. InvoiceForm must handle dynamic line items with tax rate dropdowns. LineItemRow should compute line total. InvoiceStatusBadge maps status to color (Draft=gray, Sent=blue, Viewed=green, Paid=purple, Overdue=red).",
+    "title": "Build tax rates API and shared UI components",
+    "priority": 8,
+    "description": "Implement tax rates CRUD API: GET/POST /api/tax-rates, GET/PUT/DELETE /api/tax-rates/[id]. DELETE returns 409 if tax rate is in use. Create shared UI components: InvoiceForm (with line item management), LineItemRow (editable row), InvoiceStatusBadge (colored badge for status), and DashboardCard (stat card).",
+    "dependencies": [
+      "task-1",
+      "task-4"
+    ]
+  },
+  {
+    "id": "task-9",
+    "risk": "low",
+    "files": [
+      "src/app/(dashboard)/layout.tsx",
+      "src/app/(dashboard)/dashboard/page.tsx",
+      "src/app/(dashboard)/invoices/page.tsx",
+      "src/app/layout.tsx",
+      "src/app/globals.css"
+    ],
+    "notes": "Dashboard layout should protect routes and redirect to login if no session. Dashboard page uses DashboardCard components and fetches from /api/dashboard/summary. Invoices list page fetches from /api/invoices with query params.",
+    "title": "Build dashboard layout and main pages",
+    "priority": 9,
+    "description": "Create the dashboard layout (src/app/(dashboard)/layout.tsx) with navigation and auth redirect. Build the dashboard home page (src/app/(dashboard)/dashboard/page.tsx) showing summary stats, recent invoices, and quick actions. Create the invoices list page (src/app/(dashboard)/invoices/page.tsx) with filtering by status, client, date.",
+    "dependencies": [
+      "task-2",
+      "task-7",
+      "task-8"
+    ]
+  },
+  {
+    "id": "task-10",
+    "risk": "medium",
+    "files": [
+      "src/app/(dashboard)/invoices/new/page.tsx",
+      "src/app/(dashboard)/invoices/[id]/page.tsx",
+      "src/app/(dashboard)/invoices/[id]/edit/page.tsx"
+    ],
+    "notes": "Detail page must conditionally show edit/send/pay buttons based on status. Edit page should only be accessible for Draft invoices. All pages must handle loading and error states.",
+    "title": "Build invoice creation and detail pages",
+    "priority": 10,
+    "description": "Create invoice creation page (src/app/(dashboard)/invoices/new/page.tsx) using InvoiceForm, posts to /api/invoices. Create invoice detail page (src/app/(dashboard)/invoices/[id]/page.tsx) showing full invoice, line items, payments, status history, and actions (send, pay, preview). Create invoice edit page (src/app/(dashboard)/invoices/[id]/edit/page.tsx) for Draft invoices only.",
+    "dependencies": [
+      "task-5",
+      "task-6",
+      "task-8",
+      "task-9"
+    ]
+  },
+  {
+    "id": "task-11",
+    "risk": "low",
+    "files": [
+      "src/app/invoice/view/[token]/page.tsx",
+      "src/app/page.tsx"
+    ],
+    "notes": "Public view page must be server-rendered, no auth required. The page should trigger the Viewed transition via the API route. Home page should be simple and direct to login/register.",
+    "title": "Build public invoice view page and home page",
+    "priority": 11,
+    "description": "Create the public invoice view page (src/app/invoice/view/[token]/page.tsx) that fetches invoice data via the API route, displays invoice in a print-friendly format, and includes a 'Pay Now' button linking to placeholder Stripe URL. Create the marketing home page (src/app/page.tsx) with login/register CTAs.",
+    "dependencies": [
+      "task-7",
+      "task-9"
+    ]
+  },
+  {
+    "id": "task-12",
+    "risk": "low",
+    "files": [
+      "src/app/(auth)/login/page.tsx",
+      "src/app/(auth)/register/page.tsx"
+    ],
+    "notes": "Auth pages should redirect to dashboard on success. Test all critical user flows to ensure data consistency and state transitions work correctly with the in-memory store.",
+    "title": "Build auth pages (login/register) and final integration",
+    "priority": 12,
+    "description": "Create login and register pages (src/app/(auth)/login/page.tsx, src/app/(auth)/register/page.tsx) with forms that post to the auth API routes and handle errors. Test end-to-end flows: register, login, create client, create invoice, send invoice, view public link, record payment.",
+    "dependencies": [
+      "task-2",
+      "task-9",
+      "task-10",
+      "task-11"
+    ]
+  }
+]
